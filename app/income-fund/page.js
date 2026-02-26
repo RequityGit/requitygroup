@@ -44,8 +44,8 @@ export default function IncomeFundPage() {
             <li><Link href="/income-fund" style={{ color: 'var(--gold)' }}>Income Fund</Link></li>
             <li><Link href="/lending">Lending</Link></li>
             <li><Link href="/portfolio">Portfolio</Link></li>
-            <li><Link href="/#about">About</Link></li>
-            <li><Link href="/#insights">Insights</Link></li>
+            <li><Link href="/about">About</Link></li>
+            <li><Link href="/insights">Insights</Link></li>
             <li><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a></li>
             <li><Link href="/#invest" className="nav-cta">Invest With Us</Link></li>
           </ul>
@@ -321,7 +321,7 @@ export default function IncomeFundPage() {
             </div>
             <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><Link href="/apply-to-invest">Apply to Invest</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/portfolio">Portfolio</Link></div>
             <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Loan Request</Link><Link href="/apply">Apply for a Loan</Link></div>
-            <div className="footer-col"><h4>Company</h4><Link href="/#about">About</Link><Link href="/#insights">Insights</Link></div>
+            <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/insights">Insights</Link></div>
           </div>
           <div className="footer-bottom">
             <p>&copy; 2026 Requity Group. All rights reserved.</p>
