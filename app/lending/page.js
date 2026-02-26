@@ -1,0 +1,762 @@
+'use client';
+
+import { useEffect } from 'react';
+import Link from 'next/link';
+
+const LOAN_PROGRAMS = [
+  {
+    id: 'cre-bridge',
+    name: 'CRE Bridge',
+    desc: 'Short-term bridge financing for commercial real estate acquisitions, refinances, and value-add repositioning.',
+    features: ['Up to 80% LTV', '12–24 month terms', 'Interest-only payments', 'Close in 2–3 weeks'],
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8 40h32" />
+        <path d="M10 40V22l14-10 14 10v18" />
+        <path d="M20 40v-10h8v10" />
+        <rect x="18" y="24" width="5" height="5" />
+        <rect x="27" y="24" width="5" height="5" />
+      </svg>
+    ),
+  },
+  {
+    id: 'manufactured-housing',
+    name: 'Manufactured Housing',
+    desc: 'Financing for manufactured housing communities and mobile home park acquisitions with flexible structures.',
+    features: ['Acquisition & refinance', 'Value-add rehab capital', 'Experienced MH operators', 'Nationwide coverage'],
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="6" y="20" width="36" height="18" rx="2" />
+        <path d="M6 28h36" />
+        <path d="M12 20v-5h8v5" />
+        <circle cx="14" cy="38" r="3" />
+        <circle cx="34" cy="38" r="3" />
+        <path d="M24 28v10" />
+      </svg>
+    ),
+  },
+  {
+    id: 'rv-park',
+    name: 'RV Park',
+    desc: 'Capital for RV parks, campgrounds, and outdoor hospitality properties. Acquisition and improvement financing.',
+    features: ['Park acquisitions', 'Infrastructure improvements', 'Expansion financing', 'Seasonal cash flow'],
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10 36l14-22 14 22" />
+        <path d="M16 36l8-12 8 12" />
+        <path d="M24 14V9" />
+        <path d="M6 36h36" />
+        <path d="M22 36v-5h4v5" />
+      </svg>
+    ),
+  },
+  {
+    id: 'multifamily',
+    name: 'Multifamily',
+    desc: 'Bridge and transitional financing for apartment buildings and multifamily residential properties of all sizes.',
+    features: ['5+ unit properties', 'Value-add renovations', 'Lease-up financing', 'Flexible prepayment'],
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="8" y="10" width="32" height="30" />
+        <path d="M8 20h32" />
+        <path d="M8 30h32" />
+        <path d="M20 10v30" />
+        <path d="M32 10v30" />
+        <path d="M22 40v-5h4v5" />
+      </svg>
+    ),
+  },
+  {
+    id: 'fix-flip',
+    name: 'Fix & Flip',
+    desc: 'Short-term loans for residential property renovation and resale. Fast closings for competitive markets.',
+    features: ['Up to 90% of purchase', '100% rehab financing', '6–12 month terms', 'Draw-based rehab'],
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M24 8l16 14H8L24 8z" />
+        <rect x="12" y="22" width="24" height="18" />
+        <rect x="20" y="28" width="8" height="12" />
+        <path d="M36 16l5-5M41 11l-4 1 3 3-1 4" />
+      </svg>
+    ),
+  },
+  {
+    id: 'dscr-rental',
+    name: 'DSCR Rental',
+    desc: 'Long-term rental property loans based on property cash flow — not personal income. Ideal for portfolio landlords.',
+    features: ['No tax returns needed', 'Cash-flow qualified', '30-year fixed available', 'Unlimited properties'],
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="10" y="8" width="28" height="32" rx="2" />
+        <path d="M18 18h12" />
+        <path d="M18 26h12" />
+        <path d="M18 34h8" />
+        <path d="M24 8V4" />
+        <circle cx="36" cy="36" r="7" fill="#0a0f1a" />
+        <path d="M36 32v8M33 36h6" />
+      </svg>
+    ),
+  },
+  {
+    id: 'new-construction',
+    name: 'New Construction',
+    desc: 'Ground-up construction financing for residential and commercial projects. Full-stack capital solutions.',
+    features: ['Ground-up financing', 'Draw schedule based', 'Horizontal development', 'Spec & pre-sold'],
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 40V18h20v22" />
+        <path d="M12 40h28" />
+        <path d="M22 26h10" />
+        <path d="M22 34h10" />
+        <path d="M28 18V8l-10 10" />
+        <path d="M8 40l5-12" />
+        <path d="M10 28v12" />
+      </svg>
+    ),
+  },
+];
+
+export default function LendingPage() {
+  useEffect(() => {
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) e.target.classList.add('visible');
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+    reveals.forEach(el => observer.observe(el));
+
+    const mobileToggle = document.getElementById('mobileToggle');
+    const navLinks = document.getElementById('navLinks');
+    mobileToggle?.addEventListener('click', () => navLinks?.classList.toggle('open'));
+    navLinks?.querySelectorAll('a').forEach(l =>
+      l.addEventListener('click', () => navLinks?.classList.remove('open'))
+    );
+
+    return () => observer.disconnect();
+  }, []);
+
+  const ArrowIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
+  return (
+    <>
+      <style>{lendingStyles}</style>
+
+      {/* Navigation */}
+      <nav id="navbar" className="scrolled">
+        <div className="container">
+          <Link href="/" className="nav-logo">REQUIT<span>Y</span></Link>
+          <ul className="nav-links" id="navLinks">
+            <li><Link href="/income-fund">Income Fund</Link></li>
+            <li><Link href="/lending" style={{ color: 'var(--gold)' }}>Lending</Link></li>
+            <li><Link href="/portfolio">Portfolio</Link></li>
+            <li><Link href="/#about">About</Link></li>
+            <li><Link href="/#insights">Insights</Link></li>
+            <li><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a></li>
+            <li><Link href="/#invest" className="nav-cta">Invest With Us</Link></li>
+          </ul>
+          <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="ld-hero">
+        <div className="container">
+          <div className="ld-hero-grid">
+            <div className="ld-hero-content">
+              <div className="section-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>Requity Lending</div>
+              <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>Real Estate Lending<br />by <em>Real Operators</em></h1>
+              <p className="ld-hero-desc" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.6s forwards' }}>
+                We&apos;re not just lenders — we&apos;re operators. Our team brings decades of hands-on real estate experience to every loan we underwrite, providing faster execution and smarter capital solutions.
+              </p>
+              <div className="ld-hero-actions" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.8s forwards' }}>
+                <Link href="/apply" className="btn-primary">Request a Loan <ArrowIcon /></Link>
+                <a href="tel:+18133275180" className="btn-secondary">Call 813.327.5180</a>
+              </div>
+            </div>
+            <div className="ld-hero-stats" style={{ opacity: 0, animation: 'fadeIn 1s 0.6s forwards' }}>
+              <div className="ld-stats-card">
+                <h3>Lending Track Record</h3>
+                <div className="ld-stat-row">
+                  <div className="ld-stat"><div className="ld-stat-number">70+</div><div className="ld-stat-label">Loans<br />Originated</div></div>
+                  <div className="ld-stat"><div className="ld-stat-number">$150M+</div><div className="ld-stat-label">Capital<br />Deployed</div></div>
+                  <div className="ld-stat"><div className="ld-stat-number">14 Day</div><div className="ld-stat-label">Average<br />Close Time</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Loan Programs */}
+      <section className="ld-programs">
+        <div className="container">
+          <div className="ld-programs-header reveal">
+            <div className="section-eyebrow">Loan Programs</div>
+            <h2 className="section-title">Financing for Every Strategy</h2>
+            <p className="section-desc">Whether you&apos;re acquiring, renovating, or building, we have a loan program tailored to your real estate investment strategy.</p>
+          </div>
+          <div className="ld-programs-grid">
+            {LOAN_PROGRAMS.map((program, i) => (
+              <Link
+                key={program.id}
+                href={`/apply?type=${encodeURIComponent(program.name)}`}
+                className={`ld-program-card reveal ${i < 3 ? `reveal-delay-${i + 1}` : ''}`}
+              >
+                <div className="ld-program-icon">{program.icon}</div>
+                <h3>{program.name}</h3>
+                <p>{program.desc}</p>
+                <ul className="ld-program-features">
+                  {program.features.map((f) => (
+                    <li key={f}>
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8l3 3 5-5" /></svg>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <div className="ld-program-cta">
+                  Apply Now <ArrowIcon />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Requity */}
+      <section className="ld-why">
+        <div className="container">
+          <div className="ld-why-grid">
+            <div className="reveal">
+              <div className="section-eyebrow">Why Requity Lending</div>
+              <h2 className="section-title">Capital from People<br />Who Understand Your Deal</h2>
+              <p className="section-desc">Most lenders underwrite spreadsheets. We underwrite real estate. Our hands-on operational experience means we understand the nuances of your deal and can move quickly with confidence.</p>
+            </div>
+            <div className="ld-why-features reveal reveal-delay-2">
+              <div className="ld-why-feature">
+                <div className="ld-why-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6v6l4 2" />
+                  </svg>
+                </div>
+                <div>
+                  <h4>Fast Execution</h4>
+                  <p>Close in as little as 10 days. We make decisions in-house — no committees, no bureaucracy, no delays.</p>
+                </div>
+              </div>
+              <div className="ld-why-feature">
+                <div className="ld-why-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4>Certainty of Close</h4>
+                  <p>When we issue a term sheet, we close. Our track record speaks for itself — borrowers come back because we deliver.</p>
+                </div>
+              </div>
+              <div className="ld-why-feature">
+                <div className="ld-why-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                  </svg>
+                </div>
+                <div>
+                  <h4>Operator Mentality</h4>
+                  <p>We&apos;ve been in your shoes. Our lending team includes experienced operators who understand value-add execution.</p>
+                </div>
+              </div>
+              <div className="ld-why-feature">
+                <div className="ld-why-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4>Direct Communication</h4>
+                  <p>Talk directly to decision-makers from day one. No loan officers, no middlemen — just direct access to our lending team.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Process */}
+      <section className="ld-process">
+        <div className="container">
+          <div className="ld-process-header reveal">
+            <div className="section-eyebrow">Our Process</div>
+            <h2 className="section-title">From Application to Funding</h2>
+          </div>
+          <div className="ld-process-steps">
+            <div className="ld-process-step reveal reveal-delay-1">
+              <div className="ld-step-number">01</div>
+              <h3>Submit Your Deal</h3>
+              <p>Complete our simple loan request form with your deal details. No credit pull, no commitment — just tell us about your project.</p>
+            </div>
+            <div className="ld-process-step reveal reveal-delay-2">
+              <div className="ld-step-number">02</div>
+              <h3>Receive a Term Sheet</h3>
+              <p>Our team reviews your request and issues a term sheet within 24 hours outlining loan amount, rate, and terms.</p>
+            </div>
+            <div className="ld-process-step reveal reveal-delay-3">
+              <div className="ld-step-number">03</div>
+              <h3>Underwriting &amp; Diligence</h3>
+              <p>We conduct property-level due diligence and finalize loan documents. Our in-house process keeps things moving fast.</p>
+            </div>
+            <div className="ld-process-step reveal">
+              <div className="ld-step-number">04</div>
+              <h3>Close &amp; Fund</h3>
+              <p>Funds are wired at closing. Most deals close in 10–14 days from term sheet acceptance. Get to work on your project.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Banner */}
+      <section className="ld-contact">
+        <div className="container">
+          <div className="ld-contact-banner reveal">
+            <div className="ld-contact-content">
+              <h3>Have a deal? Let&apos;s talk.</h3>
+              <p>Our lending team is available to discuss your project and provide a quick indication of terms. No obligation, no credit pull.</p>
+            </div>
+            <div className="ld-contact-actions">
+              <Link href="/apply" className="btn-primary">Submit Loan Request <ArrowIcon /></Link>
+              <a href="tel:+18133275180" className="ld-phone-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
+                813.327.5180
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="cta-section">
+        <div className="container">
+          <div className="reveal">
+            <div className="section-eyebrow">Investors</div>
+            <h2 className="section-title">Looking to Invest, Not Borrow?</h2>
+            <p className="section-desc" style={{ maxWidth: 560, margin: '0 auto 48px', textAlign: 'center' }}>
+              Our Income Fund provides accredited investors with consistent monthly income backed by the same real estate loans we originate.
+            </p>
+            <Link href="/income-fund" className="btn-primary">
+              Learn About the Income Fund <ArrowIcon />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer>
+        <div className="container">
+          <div className="footer-grid">
+            <div className="footer-brand">
+              <Link href="/" className="nav-logo" style={{ fontSize: 24 }}>REQUIT<span style={{ color: 'var(--gold)' }}>Y</span></Link>
+              <p>A vertically integrated real estate investment company applying operational expertise to small-cap real estate.</p>
+            </div>
+            <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><Link href="/apply-to-invest">Apply to Invest</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/portfolio">Portfolio</Link></div>
+            <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Loan Request</Link><Link href="/apply">Apply for a Loan</Link></div>
+            <div className="footer-col"><h4>Company</h4><Link href="/#about">About</Link><Link href="/#insights">Insights</Link></div>
+          </div>
+          <div className="footer-bottom">
+            <p>&copy; 2026 Requity Group. All rights reserved.</p>
+            <div className="footer-contact"><a href="tel:+18132880636">813.288.0636</a> &middot; <a href="mailto:contact@requitygroup.com">contact@requitygroup.com</a><br />401 E Jackson St, Suite 3300, Tampa, FL 33602</div>
+          </div>
+        </div>
+      </footer>
+    </>
+  );
+}
+
+const lendingStyles = `
+  /* Hero */
+  .ld-hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(165deg, var(--navy) 0%, #0d1424 50%, var(--navy-light) 100%);
+  }
+  .ld-hero::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -15%;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(201, 168, 76, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .ld-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.2), transparent);
+  }
+  .ld-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    padding: 140px 0 100px;
+  }
+  .ld-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 5vw, 62px);
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 28px;
+  }
+  .ld-hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .ld-hero-desc {
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--text-secondary);
+    max-width: 520px;
+    margin-bottom: 40px;
+    font-weight: 300;
+  }
+  .ld-hero-actions {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  @media (max-width: 968px) {
+    .ld-hero-grid { grid-template-columns: 1fr; gap: 48px; padding: 120px 0 60px; }
+    .ld-hero-actions { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* Hero Stats */
+  .ld-stats-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(10px);
+    padding: 48px;
+  }
+  .ld-stats-card h3 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 400;
+    margin-bottom: 40px;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+  }
+  .ld-stat-row {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .ld-stat {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .ld-stat:last-child { border-bottom: none; padding-bottom: 0; }
+  .ld-stat-number {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .ld-stat-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: right;
+  }
+  @media (max-width: 968px) {
+    .ld-stats-card { padding: 32px; }
+    .ld-stat-number { font-size: 36px; }
+  }
+
+  /* Loan Programs */
+  .ld-programs {
+    background: var(--navy-light);
+    border-top: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .ld-programs-header { margin-bottom: 72px; }
+  .ld-programs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+  .ld-program-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 40px 36px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .ld-program-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ld-program-card:hover::before { transform: scaleX(1); }
+  .ld-program-card:hover {
+    background: rgba(201, 168, 76, 0.04);
+    border-color: rgba(201, 168, 76, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+  }
+  .ld-program-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--gold);
+    margin-bottom: 24px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+  }
+  .ld-program-card:hover .ld-program-icon { opacity: 1; }
+  .ld-program-card h3 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 400;
+    margin-bottom: 12px;
+  }
+  .ld-program-card > p {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    font-weight: 300;
+    margin-bottom: 24px;
+  }
+  .ld-program-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+    flex-grow: 1;
+  }
+  .ld-program-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+  .ld-program-features svg { color: var(--gold); flex-shrink: 0; }
+  .ld-program-cta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    transition: gap 0.3s;
+  }
+  .ld-program-card:hover .ld-program-cta { gap: 14px; }
+  @media (max-width: 480px) {
+    .ld-programs-grid { grid-template-columns: 1fr; }
+    .ld-program-card { padding: 32px 24px; }
+  }
+
+  /* Why Requity */
+  .ld-why {
+    background: var(--navy);
+  }
+  .ld-why-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .ld-why-features {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+  .ld-why-feature {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .ld-why-icon {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(201, 168, 76, 0.3);
+    color: var(--gold);
+  }
+  .ld-why-feature h4 {
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .ld-why-feature p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+  @media (max-width: 968px) {
+    .ld-why-grid { grid-template-columns: 1fr; gap: 48px; }
+  }
+
+  /* Process */
+  .ld-process {
+    background: var(--navy-light);
+    border-top: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .ld-process-header {
+    text-align: center;
+    margin-bottom: 72px;
+  }
+  .ld-process-header .section-title {
+    max-width: 500px;
+    margin: 0 auto 20px;
+  }
+  .ld-process-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+  }
+  .ld-process-step {
+    padding: 48px 36px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .ld-process-step::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ld-process-step:hover::before { transform: scaleX(1); }
+  .ld-process-step:hover {
+    background: rgba(201, 168, 76, 0.04);
+    transform: translateY(-4px);
+  }
+  .ld-step-number {
+    font-family: var(--font-display);
+    font-size: 56px;
+    font-weight: 300;
+    color: rgba(201, 168, 76, 0.2);
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .ld-process-step h3 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 14px;
+  }
+  .ld-process-step p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    font-weight: 300;
+  }
+  @media (max-width: 968px) {
+    .ld-process-steps { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .ld-process-steps { grid-template-columns: 1fr; }
+    .ld-process-step { padding: 36px 28px; }
+  }
+
+  /* Contact Banner */
+  .ld-contact {
+    background: var(--navy);
+  }
+  .ld-contact-banner {
+    background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy) 100%);
+    border: 1px solid rgba(201, 168, 76, 0.15);
+    padding: 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+  }
+  .ld-contact-banner h3 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 300;
+    margin-bottom: 12px;
+  }
+  .ld-contact-banner p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    max-width: 500px;
+  }
+  .ld-contact-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .ld-phone-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: opacity 0.3s;
+  }
+  .ld-phone-link:hover { opacity: 0.8; }
+  @media (max-width: 768px) {
+    .ld-contact-banner { flex-direction: column; text-align: center; padding: 40px 32px; }
+    .ld-contact-banner p { max-width: none; }
+  }
+`;

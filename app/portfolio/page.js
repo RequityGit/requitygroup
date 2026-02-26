@@ -88,8 +88,8 @@ export default async function PortfolioPage() {
         <div className="container">
           <Link href="/" className="nav-logo">REQUIT<span>Y</span></Link>
           <ul className="nav-links" id="navLinks">
-            <li><Link href="/#fund">Income Fund</Link></li>
-            <li><Link href="/#lending">Lending</Link></li>
+            <li><Link href="/income-fund">Income Fund</Link></li>
+            <li><Link href="/lending">Lending</Link></li>
             <li><Link href="/portfolio" style={{ color: 'var(--gold)' }}>Portfolio</Link></li>
             <li><Link href="/#about">About</Link></li>
             <li><Link href="/#insights">Insights</Link></li>
@@ -172,8 +172,8 @@ export default async function PortfolioPage() {
               <Link href="/" className="nav-logo" style={{ fontSize: 24 }}>REQUIT<span style={{ color: 'var(--gold)' }}>Y</span></Link>
               <p>A vertically integrated real estate investment company applying operational expertise to small-cap real estate.</p>
             </div>
-            <div className="footer-col"><h4>Invest</h4><Link href="/#fund">Income Fund</Link><Link href="/apply-to-invest">Apply to Invest</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/portfolio">Portfolio</Link></div>
-            <div className="footer-col"><h4>Lending</h4><Link href="/loan-programs">Loan Programs</Link><Link href="/apply">Loan Request</Link><Link href="/apply">Apply for a Loan</Link><a href="https://loanlocker.com">LoanLocker</a></div>
+            <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><Link href="/apply-to-invest">Apply to Invest</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/portfolio">Portfolio</Link></div>
+            <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Loan Request</Link><Link href="/apply">Apply for a Loan</Link></div>
             <div className="footer-col"><h4>Company</h4><Link href="/#about">About</Link><Link href="/#insights">Insights</Link><Link href="/testimonials">Testimonials</Link></div>
           </div>
           <div className="footer-bottom">
