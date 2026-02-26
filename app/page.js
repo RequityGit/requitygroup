@@ -52,9 +52,9 @@ export default function HomePage() {
         <div className="container">
           <a href="/" className="nav-logo">REQUIT<span>Y</span></a>
           <ul className="nav-links" id="navLinks">
-            <li><a href="#fund">Income Fund</a></li>
-            <li><a href="#lending">Lending</a></li>
-            <li><a href="#portfolio">Portfolio</a></li>
+            <li><a href="/income-fund">Income Fund</a></li>
+            <li><a href="/lending">Lending</a></li>
+            <li><a href="/portfolio">Portfolio</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="#insights">Insights</a></li>
             <li><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a></li>
@@ -228,8 +228,8 @@ export default function HomePage() {
               <a href="/" className="nav-logo" style={{ fontSize: 24 }}>REQUIT<span style={{ color: 'var(--gold)' }}>Y</span></a>
               <p>A vertically integrated real estate investment company applying operational expertise to small-cap real estate.</p>
             </div>
-            <div className="footer-col"><h4>Invest</h4><a href="#fund">Income Fund</a><a href="/apply-to-invest">Apply to Invest</a><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><a href="/portfolio">Portfolio</a></div>
-            <div className="footer-col"><h4>Lending</h4><a href="/loan-programs">Loan Programs</a><a href="/apply">Loan Request</a><a href="/apply">Apply for a Loan</a><a href="https://loanlocker.com">LoanLocker</a></div>
+            <div className="footer-col"><h4>Invest</h4><a href="/income-fund">Income Fund</a><a href="/apply-to-invest">Apply to Invest</a><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><a href="/portfolio">Portfolio</a></div>
+            <div className="footer-col"><h4>Lending</h4><a href="/lending">Loan Programs</a><a href="/apply">Loan Request</a><a href="/apply">Apply for a Loan</a></div>
             <div className="footer-col"><h4>Company</h4><a href="#about">About</a><a href="#insights">Insights</a><a href="/testimonials">Testimonials</a></div>
           </div>
           <div className="footer-bottom">
