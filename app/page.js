@@ -48,7 +48,7 @@ export default function HomePage() {
         <div className="hp-hero">
           {/* Nav */}
           <nav>
-            <Link href="/" className="nav-logo">REQUIT<span>Y</span></Link>
+            <Link href="/" className="nav-logo"><img src="/logo-light.svg" alt="Requity" /></Link>
             <ul className="nav-links" id="navLinks">
               <li><Link href="/income-fund">Income Fund</Link></li>
               <li><Link href="/lending">Lending</Link></li>
@@ -219,7 +219,7 @@ export default function HomePage() {
           <footer>
             <div className="footer-grid">
               <div className="footer-brand">
-                <Link href="/" className="nav-logo" style={{ fontSize: 24 }}>REQUIT<span style={{ color: 'var(--champagne)' }}>Y</span></Link>
+                <Link href="/" className="nav-logo"><img src="/logo-light.svg" alt="Requity" /></Link>
                 <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
               </div>
               <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
