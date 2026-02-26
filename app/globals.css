@@ -103,6 +103,7 @@ nav.scrolled {
   font-family: var(--font-body); font-size: 13px; font-weight: 600;
   padding: 15px 32px; border-radius: 6px;
   text-decoration: none; transition: all 0.25s; letter-spacing: 0.01em;
+  min-height: 48px;
 }
 .btn-primary-light:hover { background: var(--champagne-dk); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(198,169,98,0.2); }
 .btn-outline-light {
@@ -115,7 +116,7 @@ nav.scrolled {
 .btn-outline-light:hover { color: var(--navy); border-color: rgba(8,21,37,0.25); background: rgba(8,21,37,0.03); }
 
 /* ── Section helpers ── */
-section { padding: 80px 0; position: relative; }
+section { padding: clamp(48px, 8vw, 80px) 0; position: relative; }
 .section-eyebrow {
   font-family: var(--font-body); font-size: 11px; font-weight: 600;
   letter-spacing: 0.22em; text-transform: uppercase;
@@ -153,7 +154,7 @@ section { padding: 80px 0; position: relative; }
 /* ── Cards (light zone) ── */
 .card {
   background: var(--white); border: 1px solid rgba(8,21,37,0.06);
-  border-radius: 16px; padding: 36px 32px;
+  border-radius: 16px; padding: clamp(24px, 3.5vw, 36px) clamp(20px, 3vw, 32px);
   transition: all 0.3s; position: relative; overflow: hidden;
 }
 .card::after {
@@ -197,11 +198,17 @@ section { padding: 80px 0; position: relative; }
   .stat-cell:nth-child(2) { border-right: none; }
   .stat-num { font-size: 30px; }
 }
+@media (max-width: 400px) {
+  .stats-bar { grid-template-columns: 1fr; }
+  .stat-cell { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .stat-cell:last-child { border-bottom: none; }
+  .stat-num { font-size: 28px; }
+}
 
 /* ── Testimonial cards (light zone) ── */
 .test-card {
   background: var(--white); border: 1px solid rgba(8,21,37,0.06);
-  border-radius: 16px; padding: 40px 36px; position: relative;
+  border-radius: 16px; padding: clamp(24px, 4vw, 40px) clamp(20px, 3.5vw, 36px); position: relative;
 }
 .test-card .big-q {
   font-family: var(--font-display); font-size: 100px;
@@ -251,7 +258,7 @@ section { padding: 80px 0; position: relative; }
 /* ── Lending CTA banner ── */
 .lending-cta-banner {
   background: linear-gradient(135deg, var(--navy-deep), var(--navy));
-  border-radius: 18px; padding: 48px 56px;
+  border-radius: 18px; padding: clamp(32px, 5vw, 48px) clamp(24px, 5vw, 56px);
   display: flex; justify-content: space-between; align-items: center;
   position: relative; overflow: hidden;
 }
@@ -275,7 +282,8 @@ section { padding: 80px 0; position: relative; }
   font-size: 14px; color: rgba(255,255,255,0.4); line-height: 1.6; max-width: 440px;
 }
 @media (max-width: 768px) {
-  .lending-cta-banner { flex-direction: column; gap: 24px; text-align: center; padding: 40px 32px; }
+  .lending-cta-banner { flex-direction: column; gap: 24px; text-align: center; border-radius: 14px; }
+  .lending-cta-banner p { max-width: none; }
 }
 
 /* ── Footer (dark rounded card in light zone) ── */
@@ -315,7 +323,11 @@ footer {
   .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
   .footer-contact { text-align: center; }
 }
-@media (max-width: 600px) { .footer-grid { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  footer { padding: 32px 20px 24px; }
+  .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+  .footer-bottom p { font-size: 11px; line-height: 1.6; }
+}
 
 /* ── Animations ── */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }

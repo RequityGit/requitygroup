@@ -5,6 +5,11 @@ export const metadata = {
   description: 'Requity is a vertically integrated real estate investment company that applies operational expertise to small-cap real estate. Over $150M in AUM.',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">

@@ -124,6 +124,7 @@ const portfolioStyles = `
   }
   .pf-filter-btn {
     padding: 10px 22px;
+    min-height: 44px;
     background: var(--white);
     border: 1px solid rgba(8,21,37,0.08);
     border-radius: 8px;
@@ -164,10 +165,9 @@ const portfolioStyles = `
   /* Grid */
   .pf-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
     gap: 20px;
   }
-  @media (max-width: 480px) { .pf-grid { grid-template-columns: 1fr; } }
 
   /* Card */
   .pf-card {
