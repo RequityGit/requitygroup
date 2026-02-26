@@ -166,11 +166,11 @@ export default function AboutPage() {
               </div>
               <div className="card reveal reveal-delay-2">
                 <div className="ab-team-photo">
-                  <div className="ab-team-initials">CD</div>
+                  <div className="ab-team-initials">GK</div>
                 </div>
-                <h3>Charlie DeHart</h3>
-                <div className="ab-team-role">Principal</div>
-                <p>Charlie co-manages the company alongside Dylan, driving strategy around deal structure, investor alignment, and portfolio growth. His focus on creating reliable returns, simple deal structures, and transparent reporting is central to how Requity operates.</p>
+                <h3>Grethel Kauss</h3>
+                <div className="ab-team-role">Senior Regional Manager</div>
+                <p>Grethel Kauss serves as a Regional Manager for TRG Management, overseeing the Tennessee and Florida regions. With a Bachelor&apos;s degree in Business Economics from the University of South Florida and over 15 years of property management experience, Grethel drives the strategic vision and growth objectives within these regions. Her extensive experience, gained from roles at renowned organizations such as Maxx Properties, TGM Communities, and Camden Property Trust, has honed her expertise within TRG since 2021.</p>
               </div>
               <div className="card reveal reveal-delay-3">
                 <div className="ab-team-photo">
