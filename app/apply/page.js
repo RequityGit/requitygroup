@@ -594,7 +594,7 @@ function Header() {
     <div className="apply-header">
       <div className="apply-header-inner">
         <Link href="/" className="apply-logo">
-          <img src="/logo-light.svg" alt="Requity" style={{ height: 28 }} />
+          <img src="/logo-light.png" alt="Requity" style={{ height: 28 }} />
           <span className="logo-tag">LENDING</span>
         </Link>
         <a href="tel:+18133275180" className="header-phone">

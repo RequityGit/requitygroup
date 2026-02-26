@@ -154,7 +154,7 @@ export default function LendingPage() {
 
         {/* Navigation */}
         <nav className="scrolled">
-          <Link href="/" className="nav-logo"><img src="/logo-light.svg" alt="Requity" /></Link>
+          <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
           <ul className="nav-links" id="navLinks">
             <li><Link href="/income-fund">Income Fund</Link></li>
             <li><Link href="/lending" style={{ color: 'var(--champagne)' }}>Lending</Link></li>
@@ -373,7 +373,7 @@ export default function LendingPage() {
           <footer>
             <div className="footer-grid">
               <div className="footer-brand">
-                <Link href="/" className="nav-logo"><img src="/logo-light.svg" alt="Requity" /></Link>
+                <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
                 <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
               </div>
               <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
