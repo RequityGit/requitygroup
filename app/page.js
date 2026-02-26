@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 export default function HomePage() {
   useEffect(() => {
@@ -52,9 +53,9 @@ export default function HomePage() {
         <div className="container">
           <a href="/" className="nav-logo">REQUIT<span>Y</span></a>
           <ul className="nav-links" id="navLinks">
-            <li><a href="/income-fund">Income Fund</a></li>
-            <li><a href="/lending">Lending</a></li>
-            <li><a href="/portfolio">Portfolio</a></li>
+            <li><Link href="/income-fund">Income Fund</Link></li>
+            <li><Link href="/lending">Lending</Link></li>
+            <li><Link href="/portfolio">Portfolio</Link></li>
             <li><a href="#about">About</a></li>
             <li><a href="#insights">Insights</a></li>
             <li><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a></li>
@@ -111,7 +112,7 @@ export default function HomePage() {
         <div className="container">
           <div className="portfolio-header reveal">
             <div><div className="section-eyebrow">Portfolio</div><h2 className="section-title">Featured Investments</h2></div>
-            <a href="/portfolio" className="view-all">View All Properties <ArrowIcon /></a>
+            <Link href="/portfolio" className="view-all">View All Properties <ArrowIcon /></Link>
           </div>
           <div className="portfolio-grid">
             <div className="portfolio-card reveal reveal-delay-1">
@@ -191,7 +192,7 @@ export default function HomePage() {
         <div className="container">
           <div className="lending-banner reveal">
             <div><h3>Requity Lending</h3><p>Commercial and residential bridge loans for real estate operators. Fast execution, competitive terms.</p></div>
-            <a href="/apply" className="btn-primary">Request a Loan <ArrowIcon /></a>
+            <Link href="/apply" className="btn-primary">Request a Loan <ArrowIcon /></Link>
           </div>
         </div>
       </section>
@@ -216,7 +217,7 @@ export default function HomePage() {
             <div className="section-eyebrow">Get Started</div>
             <h2 className="section-title">Join Our Investor Community</h2>
             <p className="section-desc">Gain access to institutional-quality real estate investments with transparent reporting, consistent distributions, and a proven operational team.</p>
-            <a href="/apply-to-invest" className="btn-primary">Apply to Invest <ArrowIcon /></a>
+            <Link href="/apply-to-invest" className="btn-primary">Apply to Invest <ArrowIcon /></Link>
           </div>
         </div>
       </section>
@@ -228,9 +229,9 @@ export default function HomePage() {
               <a href="/" className="nav-logo" style={{ fontSize: 24 }}>REQUIT<span style={{ color: 'var(--gold)' }}>Y</span></a>
               <p>A vertically integrated real estate investment company applying operational expertise to small-cap real estate.</p>
             </div>
-            <div className="footer-col"><h4>Invest</h4><a href="/income-fund">Income Fund</a><a href="/apply-to-invest">Apply to Invest</a><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><a href="/portfolio">Portfolio</a></div>
-            <div className="footer-col"><h4>Lending</h4><a href="/lending">Loan Programs</a><a href="/apply">Loan Request</a><a href="/apply">Apply for a Loan</a></div>
-            <div className="footer-col"><h4>Company</h4><a href="#about">About</a><a href="#insights">Insights</a><a href="/testimonials">Testimonials</a></div>
+            <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><Link href="/apply-to-invest">Apply to Invest</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/portfolio">Portfolio</Link></div>
+            <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Loan Request</Link><Link href="/apply">Apply for a Loan</Link></div>
+            <div className="footer-col"><h4>Company</h4><a href="#about">About</a><a href="#insights">Insights</a></div>
           </div>
           <div className="footer-bottom">
             <p>&copy; 2026 Requity Group. All rights reserved.</p>
