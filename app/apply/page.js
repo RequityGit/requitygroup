@@ -87,7 +87,7 @@ const LOAN_TYPES = [
         <path d="M14 20h12" />
         <path d="M14 26h8" />
         <path d="M20 6V2" />
-        <circle cx="30" cy="30" r="6" fill="#0B1526" />
+        <circle cx="30" cy="30" r="6" fill="var(--navy-deep)" />
         <path d="M30 27v6M28 30h4" />
       </svg>
     ),
@@ -267,7 +267,7 @@ export default function ApplyPage() {
         <div className="apply-container">
           <div className="success-card">
             <div className="success-icon">
-              <svg viewBox="0 0 48 48" fill="none" stroke="#E8622C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 48 48" fill="none" stroke="var(--champagne)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="24" cy="24" r="20" />
                 <path d="M15 24l6 6 12-12" />
               </svg>
@@ -610,15 +610,15 @@ const applyStyles = `
   /* ── Page ── */
   .apply-page {
     min-height: 100vh;
-    background: #0B1526;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--navy-deep);
+    font-family: var(--font-body);
     color: #fff;
   }
 
   /* ── Header ── */
   .apply-header {
     border-bottom: 1px solid rgba(255,255,255,0.06);
-    background: rgba(11, 21, 38, 0.95);
+    background: rgba(8, 21, 37, 0.92);
     backdrop-filter: blur(20px);
     position: sticky;
     top: 0;
@@ -633,16 +633,16 @@ const applyStyles = `
     justify-content: space-between;
   }
   .apply-logo {
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: var(--font-display);
     font-size: 24px;
     font-weight: 400;
     color: #fff;
     text-decoration: none;
     letter-spacing: 1px;
   }
-  .apply-logo span:first-of-type { color: #E8622C; }
+  .apply-logo span:first-of-type { color: var(--champagne); }
   .logo-tag {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-body);
     font-size: 10px;
     letter-spacing: 3px;
     color: rgba(255,255,255,0.4);
@@ -661,7 +661,7 @@ const applyStyles = `
     font-weight: 500;
     transition: color 0.3s;
   }
-  .header-phone:hover { color: #E8622C; }
+  .header-phone:hover { color: var(--champagne); }
 
   /* ── Trust Bar ── */
   .trust-bar {
@@ -683,12 +683,12 @@ const applyStyles = `
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: #E8622C;
+    color: var(--champagne);
     font-weight: 500;
     letter-spacing: 0.3px;
   }
   .trust-badge a {
-    color: #E8622C;
+    color: var(--champagne);
     text-decoration: none;
   }
   .trust-badge svg { opacity: 0.8; }
@@ -709,7 +709,7 @@ const applyStyles = `
   }
   .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #E8622C, #f08b5a);
+    background: linear-gradient(90deg, var(--champagne), var(--champagne-lt));
     border-radius: 3px;
     transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -738,13 +738,13 @@ const applyStyles = `
   }
   .progress-dot svg { width: 14px; height: 14px; }
   .progress-step.active .progress-dot {
-    border-color: #E8622C;
-    color: #E8622C;
+    border-color: var(--champagne);
+    color: var(--champagne);
     box-shadow: 0 0 0 4px rgba(232, 98, 44, 0.15);
   }
   .progress-step.completed .progress-dot {
-    border-color: #E8622C;
-    background: #E8622C;
+    border-color: var(--champagne);
+    background: var(--champagne);
     color: #fff;
   }
   .progress-label {
@@ -755,7 +755,7 @@ const applyStyles = `
     text-transform: uppercase;
     transition: color 0.3s;
   }
-  .progress-step.active .progress-label { color: #E8622C; }
+  .progress-step.active .progress-label { color: var(--champagne); }
   .progress-step.completed .progress-label { color: rgba(255,255,255,0.6); }
 
   /* ── Container ── */
@@ -779,7 +779,7 @@ const applyStyles = `
     margin-bottom: 40px;
   }
   .step-header h1 {
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: var(--font-display);
     font-size: clamp(28px, 4vw, 40px);
     font-weight: 400;
     color: #fff;
@@ -819,9 +819,9 @@ const applyStyles = `
     box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   }
   .loan-type-card.selected {
-    border-color: #E8622C;
+    border-color: var(--champagne);
     background: rgba(232, 98, 44, 0.08);
-    box-shadow: 0 0 0 1px #E8622C, 0 8px 32px rgba(232, 98, 44, 0.15);
+    box-shadow: 0 0 0 1px var(--champagne), 0 8px 32px rgba(232, 98, 44, 0.15);
   }
   .lt-icon {
     width: 40px;
@@ -831,7 +831,7 @@ const applyStyles = `
     transition: color 0.3s;
   }
   .loan-type-card:hover .lt-icon,
-  .loan-type-card.selected .lt-icon { color: #E8622C; }
+  .loan-type-card.selected .lt-icon { color: var(--champagne); }
   .lt-label {
     font-size: 16px;
     font-weight: 600;
@@ -851,7 +851,7 @@ const applyStyles = `
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: #E8622C;
+    background: var(--champagne);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -879,7 +879,7 @@ const applyStyles = `
     letter-spacing: 1px;
     margin-bottom: 8px;
   }
-  .required { color: #E8622C; }
+  .required { color: var(--champagne); }
   .optional { color: rgba(255,255,255,0.3); font-weight: 400; text-transform: none; letter-spacing: 0; }
   .form-group input,
   .form-group select,
@@ -888,7 +888,7 @@ const applyStyles = `
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.1);
     color: #fff;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-body);
     font-size: 15px;
     padding: 14px 16px;
     transition: all 0.3s;
@@ -908,12 +908,12 @@ const applyStyles = `
   .form-group input:focus,
   .form-group select:focus,
   .form-group textarea:focus {
-    border-color: #E8622C;
+    border-color: var(--champagne);
     background: rgba(232, 98, 44, 0.04);
     box-shadow: 0 0 0 3px rgba(232, 98, 44, 0.1);
   }
   .form-group select option {
-    background: #0B1526;
+    background: var(--navy-deep);
     color: #fff;
   }
 
@@ -944,7 +944,7 @@ const applyStyles = `
     font-weight: 600;
     letter-spacing: 0.5px;
     text-transform: uppercase;
-    color: #E8622C;
+    color: var(--champagne);
     border-bottom: 1px solid rgba(255,255,255,0.06);
   }
   .deal-summary-body {
@@ -974,7 +974,7 @@ const applyStyles = `
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .ds-row.highlight strong { color: #E8622C; font-weight: 700; font-size: 16px; }
+  .ds-row.highlight strong { color: var(--champagne); font-weight: 700; font-size: 16px; }
 
   /* ── Error ── */
   .form-error {
@@ -1027,7 +1027,7 @@ const applyStyles = `
     align-items: center;
     gap: 10px;
     padding: 16px 36px;
-    background: #E8622C;
+    background: var(--champagne);
     color: #fff;
     font-size: 14px;
     font-weight: 600;
@@ -1040,7 +1040,7 @@ const applyStyles = `
   }
   .btn-next:hover,
   .btn-submit:hover {
-    background: #f07840;
+    background: var(--champagne-lt);
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(232, 98, 44, 0.3);
   }
@@ -1079,7 +1079,7 @@ const applyStyles = `
   .success-icon { width: 56px; height: 56px; margin: 0 auto 28px; }
   .success-icon svg { width: 100%; height: 100%; }
   .success-card h2 {
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: var(--font-display);
     font-size: 32px;
     font-weight: 400;
     margin-bottom: 16px;
@@ -1102,7 +1102,7 @@ const applyStyles = `
     padding: 8px 0;
   }
   .success-detail-row span { color: rgba(255,255,255,0.4); font-size: 13px; }
-  .success-detail-row strong { color: #E8622C; font-size: 15px; }
+  .success-detail-row strong { color: var(--champagne); font-size: 15px; }
   .success-trust {
     display: flex;
     flex-direction: column;
