@@ -808,7 +808,7 @@ export default function ApplyPage() {
               </div>
 
               {/* Loan Amount Slider */}
-              {totalCost > 0 && (
+              {parseCurrency(form.purchasePrice) >= 100000 && (
                 <div className="slider-section">
                   <label className="slider-label">Loan Amount Requested <span className="required">*</span></label>
                   <div className="slider-amount">${sliderLoanAmount.toLocaleString('en-US')}</div>
