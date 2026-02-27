@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 
 /* ─── Loan Programs ─── */
@@ -143,6 +143,94 @@ const EXPERIENCE_LEVELS = [
   'Institutional / Fund',
 ];
 
+/* ─── Loan Program Requirements (extensible — add new loan types here) ─── */
+const LOAN_PROGRAMS = {
+  'Fix & Flip': {
+    arvLabel: 'After Repair Value (ARV)',
+    programs: [
+      {
+        id: 'premier',
+        name: 'Premier Program',
+        interestRate: 9.0,
+        rateType: 'Fixed',
+        originationPoints: 2.0,
+        pointsNote: 'Typical',
+        maxLTV: 70.0,
+        ltvNote: 'Hard Cap',
+        maxLTC: 90.0,
+        ltcNote: 'Hard Cap',
+        maxLTP: 90.0,
+        maxTerm: 12,
+        termNote: 'Extensions available',
+        requirements: {
+          minCreditScore: 650,
+          minDeals24Months: 3,
+          citizenship: 'us_resident',
+          entityPreferred: true,
+        },
+        highlights: ['Lowest rate available', 'Up to 90% of total cost', 'Up to 70% of ARV'],
+      },
+      {
+        id: 'balance_sheet',
+        name: 'Balance Sheet',
+        interestRate: 12.0,
+        rateType: 'Fixed',
+        originationPoints: 3.0,
+        pointsNote: 'Minimum',
+        maxLTV: 65.0,
+        ltvNote: 'Before adjustments',
+        maxLTC: 85.0,
+        ltcNote: 'Before adjustments',
+        maxLTP: 85.0,
+        maxTerm: 12,
+        termNote: 'Extensions available',
+        requirements: {
+          minCreditScore: 0,
+          minDeals24Months: 0,
+          citizenship: 'any',
+          entityPreferred: false,
+        },
+        highlights: ['No credit score minimum', 'New investors welcome', 'Foreign nationals OK'],
+      },
+    ],
+  },
+  // To add auto-quoting for another program, add an entry like:
+  // 'DSCR Rental': { arvLabel: 'Estimated Property Value', programs: [...] },
+};
+
+const CREDIT_SCORE_RANGES = [
+  '760 or higher',
+  '720–759',
+  '680–719',
+  '650–679',
+  '620–649',
+  'Below 620',
+  'Not sure',
+];
+
+const DEALS_24_MONTHS = [
+  '0 — First deal',
+  '1–2 deals',
+  '3–5 deals',
+  '6–10 deals',
+  '10+ deals',
+];
+
+const CITIZENSHIP_OPTIONS = [
+  'US Citizen',
+  'Permanent Resident (Green Card)',
+  'Foreign National',
+  'Other / Not Sure',
+];
+
+const ENTITY_OPTIONS = [
+  'Yes — LLC',
+  'Yes — Corporation',
+  'Yes — Other Entity',
+  'No — Individual',
+  'Planning to Form One',
+];
+
 /* ─── Helpers ─── */
 function formatPhone(value) {
   const digits = value.replace(/\D/g, '').slice(0, 10);
@@ -158,6 +246,100 @@ function formatCurrency(value) {
   return '$' + parseInt(digits).toLocaleString('en-US');
 }
 
+function parseCurrency(value) {
+  if (!value) return 0;
+  return parseInt(value.replace(/[^0-9]/g, '')) || 0;
+}
+
+function parseCreditScore(value) {
+  if (!value || value === 'Not sure') return 0;
+  const match = value.match(/^(\d+)/);
+  return match ? parseInt(match[1]) : 0;
+}
+
+function parseDeals(value) {
+  if (!value) return 0;
+  if (value.startsWith('0')) return 0;
+  if (value.startsWith('1')) return 1;
+  if (value.startsWith('3')) return 3;
+  if (value.startsWith('6')) return 6;
+  if (value.startsWith('10+')) return 10;
+  return 0;
+}
+
+/* ─── Qualification & Terms Engine ─── */
+function qualifyForProgram(form) {
+  const config = LOAN_PROGRAMS[form.loanType];
+  if (!config) return null;
+
+  const creditScore = parseCreditScore(form.creditScore);
+  const deals = parseDeals(form.dealsInLast24Months);
+  const isUSResident = ['US Citizen', 'Permanent Resident (Green Card)'].includes(form.citizenshipStatus);
+
+  for (const program of config.programs) {
+    const req = program.requirements;
+    const meetsCredit = req.minCreditScore === 0 || creditScore >= req.minCreditScore;
+    const meetsExperience = deals >= req.minDeals24Months;
+    const meetsCitizenship = req.citizenship === 'any' || isUSResident;
+
+    if (meetsCredit && meetsExperience && meetsCitizenship) {
+      return program;
+    }
+  }
+  // Fallback to last program (least restrictive)
+  return config.programs[config.programs.length - 1];
+}
+
+function calculateTerms(form, program) {
+  const purchasePrice = parseCurrency(form.purchasePrice);
+  const rehabBudget = parseCurrency(form.rehabBudget);
+  const arv = parseCurrency(form.afterRepairValue);
+  const requestedLoan = parseCurrency(form.loanAmount);
+  const totalCost = purchasePrice + rehabBudget;
+
+  const maxByLTV = arv > 0 ? Math.floor(arv * (program.maxLTV / 100)) : null;
+  const maxByLTC = totalCost > 0 ? Math.floor(totalCost * (program.maxLTC / 100)) : null;
+  const maxByLTP = purchasePrice > 0 ? Math.floor(purchasePrice * (program.maxLTP / 100)) : null;
+
+  const constraints = [maxByLTV, maxByLTC, maxByLTP].filter((v) => v !== null);
+  const maxLoan = constraints.length > 0 ? Math.min(...constraints) : null;
+
+  const estimatedLoan =
+    maxLoan !== null
+      ? requestedLoan > 0
+        ? Math.min(requestedLoan, maxLoan)
+        : maxLoan
+      : requestedLoan;
+
+  const originationFee = estimatedLoan > 0 ? Math.floor(estimatedLoan * (program.originationPoints / 100)) : null;
+  const monthlyInterest = estimatedLoan > 0 ? Math.round((estimatedLoan * (program.interestRate / 100)) / 12) : null;
+
+  return {
+    programName: program.name,
+    programId: program.id,
+    interestRate: program.interestRate,
+    rateType: program.rateType,
+    originationPoints: program.originationPoints,
+    maxLTV: program.maxLTV,
+    maxLTC: program.maxLTC,
+    maxLTP: program.maxLTP,
+    maxTerm: program.maxTerm,
+    termNote: program.termNote,
+    maxLoan,
+    estimatedLoan,
+    originationFee,
+    monthlyInterest,
+    maxByLTV,
+    maxByLTC,
+    maxByLTP,
+    purchasePrice,
+    rehabBudget,
+    arv,
+    totalCost,
+    capped: maxLoan !== null && requestedLoan > maxLoan,
+  };
+}
+
 /* ─── Component ─── */
 export default function ApplyPage() {
   const [step, setStep] = useState(1);
@@ -165,6 +347,7 @@ export default function ApplyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [generatedTerms, setGeneratedTerms] = useState(null);
   const formRef = useRef(null);
 
   const [form, setForm] = useState({
@@ -176,9 +359,16 @@ export default function ApplyPage() {
     loanAmount: '',
     unitsOrLots: '',
     rehabBudget: '',
+    afterRepairValue: '',
     exitStrategy: '',
     timeline: '',
     additionalNotes: '',
+    // Borrower qualification fields
+    creditScore: '',
+    dealsInLast24Months: '',
+    citizenshipStatus: '',
+    hasEntity: '',
+    // Contact info
     firstName: '',
     lastName: '',
     email: '',
@@ -190,7 +380,7 @@ export default function ApplyPage() {
   const set = (field) => (e) => {
     let value = e.target.value;
     if (field === 'phone') value = formatPhone(value);
-    if (['purchasePrice', 'loanAmount', 'rehabBudget'].includes(field)) value = formatCurrency(value);
+    if (['purchasePrice', 'loanAmount', 'rehabBudget', 'afterRepairValue'].includes(field)) value = formatCurrency(value);
     setForm((prev) => ({ ...prev, [field]: value }));
     setError('');
   };
@@ -200,22 +390,34 @@ export default function ApplyPage() {
     setError('');
   };
 
+  const hasAutoTerms = !!LOAN_PROGRAMS[form.loanType];
+  const totalSteps = 4;
   const showRehab = ['Fix & Flip', 'New Construction', 'CRE Bridge'].includes(form.loanType);
   const rehabLabel = form.loanType === 'New Construction' ? 'Construction Budget' : form.loanType === 'Fix & Flip' ? 'Rehab Budget' : 'Rehab / Renovation Budget';
   const unitsLabel = ['Manufactured Housing', 'RV Park', 'Multifamily'].includes(form.loanType) ? 'Number of Units' : 'Number of Units / Lots';
+  const arvLabel = LOAN_PROGRAMS[form.loanType]?.arvLabel || 'After Repair Value (ARV)';
+  const stepLabels = ['Loan Type', 'Deal Details', 'Loan Terms', 'Contact Info'];
 
   function validateStep() {
     if (step === 1 && !form.loanType) return 'Please select a loan program.';
     if (step === 2) {
       if (!form.loanAmount) return 'Please enter the loan amount requested.';
+      if (hasAutoTerms) {
+        if (!form.purchasePrice) return 'Please enter the purchase price.';
+        if (!form.afterRepairValue) return 'Please enter the after repair value.';
+        if (!form.creditScore) return 'Please select your credit score range.';
+        if (!form.dealsInLast24Months) return 'Please select your deal experience.';
+        if (!form.citizenshipStatus) return 'Please select your citizenship status.';
+      }
     }
-    if (step === 3) {
+    // Step 3 (terms) needs no validation
+    if (step === 4) {
       if (!form.firstName) return 'Please enter your first name.';
       if (!form.lastName) return 'Please enter your last name.';
       if (!form.email) return 'Please enter your email address.';
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email address.';
       if (!form.phone || form.phone.replace(/\D/g, '').length < 10) return 'Please enter a valid phone number.';
-      if (!form.experienceLevel) return 'Please select your experience level.';
+      if (!hasAutoTerms && !form.experienceLevel) return 'Please select your experience level.';
     }
     return '';
   }
@@ -223,8 +425,18 @@ export default function ApplyPage() {
   function goNext() {
     const err = validateStep();
     if (err) { setError(err); return; }
+
+    // Calculate terms when moving to step 3
+    if (step === 2 && hasAutoTerms) {
+      const program = qualifyForProgram(form);
+      if (program) {
+        const terms = calculateTerms(form, program);
+        setGeneratedTerms(terms);
+      }
+    }
+
     setDirection(1);
-    setStep((s) => Math.min(s + 1, 3));
+    setStep((s) => Math.min(s + 1, totalSteps));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -243,10 +455,14 @@ export default function ApplyPage() {
     setError('');
 
     try {
+      const payload = {
+        ...form,
+        generatedTerms: generatedTerms || null,
+      };
       const res = await fetch('/api/loan-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Submission failed');
@@ -273,12 +489,24 @@ export default function ApplyPage() {
               </svg>
             </div>
             <h2>Loan Request Submitted</h2>
-            <p>Thank you, {form.firstName}. Our lending team will review your <strong>{form.loanType}</strong> request and reach out within 24 hours.</p>
+            <p>Thank you, {form.firstName}. {generatedTerms ? <>Your <strong>{generatedTerms.programName}</strong> term sheet for your <strong>{form.loanType}</strong> deal has been sent to your email.</> : <>Our lending team will review your <strong>{form.loanType}</strong> request and reach out within 24 hours.</>}</p>
             <div className="success-details">
+              {generatedTerms && (
+                <div className="success-detail-row">
+                  <span>Program</span>
+                  <strong>{generatedTerms.programName}</strong>
+                </div>
+              )}
               <div className="success-detail-row">
-                <span>Loan Amount</span>
-                <strong>{form.loanAmount}</strong>
+                <span>{generatedTerms ? 'Est. Loan Amount' : 'Loan Amount'}</span>
+                <strong>{generatedTerms ? '$' + generatedTerms.estimatedLoan.toLocaleString() : form.loanAmount}</strong>
               </div>
+              {generatedTerms && (
+                <div className="success-detail-row">
+                  <span>Interest Rate</span>
+                  <strong>{generatedTerms.interestRate}% {generatedTerms.rateType}</strong>
+                </div>
+              )}
               {form.city && (
                 <div className="success-detail-row">
                   <span>Location</span>
@@ -288,7 +516,7 @@ export default function ApplyPage() {
             </div>
             <div className="success-trust">
               <div className="trust-item"><span className="trust-icon">&#9743;</span> We&apos;ll call you at {form.phone}</div>
-              <div className="trust-item"><span className="trust-icon">&#9993;</span> Confirmation sent to {form.email}</div>
+              <div className="trust-item"><span className="trust-icon">&#9993;</span> {generatedTerms ? 'Term sheet' : 'Confirmation'} sent to {form.email}</div>
             </div>
             <Link href="/" className="btn-back-home">Back to Home</Link>
           </div>
@@ -324,10 +552,10 @@ export default function ApplyPage() {
       {/* Progress */}
       <div className="progress-section">
         <div className="progress-bar-track">
-          <div className="progress-bar-fill" style={{ width: `${(step / 3) * 100}%` }} />
+          <div className="progress-bar-fill" style={{ width: `${(step / totalSteps) * 100}%` }} />
         </div>
         <div className="progress-steps">
-          {['Loan Type', 'Deal Details', 'Contact Info'].map((label, i) => (
+          {stepLabels.map((label, i) => (
             <div key={label} className={`progress-step ${step > i + 1 ? 'completed' : ''} ${step === i + 1 ? 'active' : ''}`}>
               <div className="progress-dot">
                 {step > i + 1 ? (
@@ -380,7 +608,7 @@ export default function ApplyPage() {
             <div className="step-content">
               <div className="step-header">
                 <h1>Deal Details</h1>
-                <p>Tell us about the property and your financing needs.</p>
+                <p>Tell us about the property and your financing needs.{hasAutoTerms ? ' We\u2019ll generate your loan terms instantly.' : ''}</p>
               </div>
               <div className="form-grid">
                 <div className="form-group full">
@@ -399,21 +627,29 @@ export default function ApplyPage() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Purchase Price / Current Value</label>
+                  <label>Purchase Price {hasAutoTerms && <span className="required">*</span>}</label>
                   <input type="text" placeholder="$0" value={form.purchasePrice} onChange={set('purchasePrice')} />
                 </div>
                 <div className="form-group">
                   <label>Loan Amount Requested <span className="required">*</span></label>
                   <input type="text" placeholder="$0" value={form.loanAmount} onChange={set('loanAmount')} />
                 </div>
-                <div className="form-group">
-                  <label>{unitsLabel}</label>
-                  <input type="text" placeholder="e.g. 24" value={form.unitsOrLots} onChange={set('unitsOrLots')} />
-                </div>
+                {!hasAutoTerms && (
+                  <div className="form-group">
+                    <label>{unitsLabel}</label>
+                    <input type="text" placeholder="e.g. 24" value={form.unitsOrLots} onChange={set('unitsOrLots')} />
+                  </div>
+                )}
                 {showRehab && (
                   <div className="form-group">
                     <label>{rehabLabel}</label>
                     <input type="text" placeholder="$0" value={form.rehabBudget} onChange={set('rehabBudget')} />
+                  </div>
+                )}
+                {hasAutoTerms && (
+                  <div className="form-group">
+                    <label>{arvLabel} <span className="required">*</span></label>
+                    <input type="text" placeholder="$0" value={form.afterRepairValue} onChange={set('afterRepairValue')} />
                   </div>
                 )}
                 <div className="form-group">
@@ -432,18 +668,215 @@ export default function ApplyPage() {
                 </div>
                 <div className="form-group full">
                   <label>Additional Notes</label>
-                  <textarea rows={4} placeholder="Any other details about the deal..." value={form.additionalNotes} onChange={set('additionalNotes')} />
+                  <textarea rows={3} placeholder="Any other details about the deal..." value={form.additionalNotes} onChange={set('additionalNotes')} />
                 </div>
               </div>
+
+              {/* Borrower Profile — shown for auto-quote programs */}
+              {hasAutoTerms && (
+                <>
+                  <div className="section-divider">
+                    <span>Borrower Profile</span>
+                  </div>
+                  <p className="section-subtitle">This information determines your loan program and rate.</p>
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label>Credit Score Range <span className="required">*</span></label>
+                      <select value={form.creditScore} onChange={set('creditScore')}>
+                        <option value="">Select Range</option>
+                        {CREDIT_SCORE_RANGES.map((c) => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Deals in Last 24 Months <span className="required">*</span></label>
+                      <select value={form.dealsInLast24Months} onChange={set('dealsInLast24Months')}>
+                        <option value="">Select Experience</option>
+                        {DEALS_24_MONTHS.map((d) => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Citizenship / Residency <span className="required">*</span></label>
+                      <select value={form.citizenshipStatus} onChange={set('citizenshipStatus')}>
+                        <option value="">Select Status</option>
+                        {CITIZENSHIP_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Entity Type</label>
+                      <select value={form.hasEntity} onChange={set('hasEntity')}>
+                        <option value="">Select Entity</option>
+                        {ENTITY_OPTIONS.map((e) => <option key={e} value={e}>{e}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
-          {/* Step 3 — Contact Info */}
+          {/* Step 3 — Loan Terms */}
           {step === 3 && (
+            <div className="step-content">
+              {hasAutoTerms && generatedTerms ? (
+                <>
+                  <div className="step-header">
+                    <h1>Your Estimated Loan Terms</h1>
+                    <p>Based on your deal details and borrower profile, you qualify for our <strong>{generatedTerms.programName}</strong>.</p>
+                  </div>
+
+                  {/* Program Badge */}
+                  <div className="term-program-badge">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                    {generatedTerms.programName}
+                  </div>
+
+                  {/* Key Metrics Row */}
+                  <div className="terms-metrics-row">
+                    <div className="term-metric">
+                      <div className="tm-value">{generatedTerms.interestRate}%</div>
+                      <div className="tm-label">Interest Rate</div>
+                      <div className="tm-note">{generatedTerms.rateType}</div>
+                    </div>
+                    <div className="term-metric">
+                      <div className="tm-value">{generatedTerms.originationPoints}%</div>
+                      <div className="tm-label">Origination</div>
+                      <div className="tm-note">{generatedTerms.originationFee ? '$' + generatedTerms.originationFee.toLocaleString() : '—'}</div>
+                    </div>
+                    <div className="term-metric">
+                      <div className="tm-value">{generatedTerms.maxTerm} Mo</div>
+                      <div className="tm-label">Loan Term</div>
+                      <div className="tm-note">{generatedTerms.termNote}</div>
+                    </div>
+                  </div>
+
+                  {/* Estimated Loan Details */}
+                  <div className="terms-details-card">
+                    <div className="tdc-header">Estimated Loan Details</div>
+                    <div className="tdc-body">
+                      {generatedTerms.maxLoan !== null && (
+                        <div className="tdc-row">
+                          <span>Maximum Loan Amount</span>
+                          <strong>${generatedTerms.maxLoan.toLocaleString()}</strong>
+                        </div>
+                      )}
+                      <div className="tdc-row highlight">
+                        <span>Estimated Loan Amount</span>
+                        <strong>${generatedTerms.estimatedLoan.toLocaleString()}</strong>
+                      </div>
+                      {generatedTerms.capped && (
+                        <div className="tdc-note-row">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" /></svg>
+                          Your requested amount exceeds the program maximum. Estimated amount has been adjusted.
+                        </div>
+                      )}
+                      {generatedTerms.originationFee !== null && (
+                        <div className="tdc-row">
+                          <span>Origination Fee ({generatedTerms.originationPoints}%)</span>
+                          <strong>${generatedTerms.originationFee.toLocaleString()}</strong>
+                        </div>
+                      )}
+                      {generatedTerms.monthlyInterest !== null && (
+                        <div className="tdc-row">
+                          <span>Est. Monthly Interest</span>
+                          <strong>${generatedTerms.monthlyInterest.toLocaleString()}</strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Leverage Limits */}
+                  <div className="terms-details-card">
+                    <div className="tdc-header">Leverage Limits</div>
+                    <div className="tdc-body">
+                      {generatedTerms.maxByLTV !== null && (
+                        <div className="tdc-leverage-row">
+                          <div className="lev-top">
+                            <span>LTV (% of ARV)</span>
+                            <strong>{generatedTerms.maxLTV}%</strong>
+                          </div>
+                          <div className="lev-bar">
+                            <div className="lev-fill" style={{ width: `${generatedTerms.maxLTV}%` }} />
+                          </div>
+                          <div className="lev-detail">Max: ${generatedTerms.maxByLTV.toLocaleString()}</div>
+                        </div>
+                      )}
+                      {generatedTerms.maxByLTC !== null && (
+                        <div className="tdc-leverage-row">
+                          <div className="lev-top">
+                            <span>LTC (% of Total Cost)</span>
+                            <strong>{generatedTerms.maxLTC}%</strong>
+                          </div>
+                          <div className="lev-bar">
+                            <div className="lev-fill" style={{ width: `${generatedTerms.maxLTC}%` }} />
+                          </div>
+                          <div className="lev-detail">Max: ${generatedTerms.maxByLTC.toLocaleString()}</div>
+                        </div>
+                      )}
+                      {generatedTerms.maxByLTP !== null && (
+                        <div className="tdc-leverage-row">
+                          <div className="lev-top">
+                            <span>LTP (% of Purchase Price)</span>
+                            <strong>{generatedTerms.maxLTP}%</strong>
+                          </div>
+                          <div className="lev-bar">
+                            <div className="lev-fill" style={{ width: `${generatedTerms.maxLTP}%` }} />
+                          </div>
+                          <div className="lev-detail">Max: ${generatedTerms.maxByLTP.toLocaleString()}</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Disclaimer */}
+                  <div className="terms-disclaimer">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
+                    These terms are estimates based on the information provided and are subject to full underwriting review, property appraisal, and final approval. Actual terms may vary.
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="step-header">
+                    <h1>Personalized Terms</h1>
+                    <p>Our lending team will prepare custom terms tailored to your deal.</p>
+                  </div>
+                  <div className="custom-terms-card">
+                    <div className="ctc-icon">
+                      <svg viewBox="0 0 48 48" fill="none" stroke="var(--champagne)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="8" y="4" width="32" height="40" rx="2" />
+                        <path d="M16 14h16M16 22h16M16 30h10" />
+                        <circle cx="36" cy="36" r="8" fill="var(--navy-deep)" stroke="var(--champagne)" />
+                        <path d="M36 33v6M34 36h4" stroke="var(--champagne)" strokeWidth="2" />
+                      </svg>
+                    </div>
+                    <h3>Custom {form.loanType} Terms</h3>
+                    <p>After reviewing your deal details, a member of our lending team will reach out with a personalized term sheet within <strong>24 hours</strong>.</p>
+                    <div className="ctc-features">
+                      <div className="ctc-feature">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--champagne)" strokeWidth="1.5"><path d="M3 8l4 4 6-6" /></svg>
+                        Competitive rates
+                      </div>
+                      <div className="ctc-feature">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--champagne)" strokeWidth="1.5"><path d="M3 8l4 4 6-6" /></svg>
+                        Flexible structures
+                      </div>
+                      <div className="ctc-feature">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--champagne)" strokeWidth="1.5"><path d="M3 8l4 4 6-6" /></svg>
+                        Fast closings
+                      </div>
+                    </div>
+                    <p className="ctc-note">Proceed to the next step to provide your contact information.</p>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Step 4 — Contact Info */}
+          {step === 4 && (
             <div className="step-content">
               <div className="step-header">
                 <h1>Contact Information</h1>
-                <p>Let us know how to reach you.</p>
+                <p>{generatedTerms ? 'Enter your details to receive your term sheet via email.' : 'Let us know how to reach you.'}</p>
               </div>
               <div className="step3-layout">
                 <div className="form-grid">
@@ -467,69 +900,110 @@ export default function ApplyPage() {
                     <label>Company <span className="optional">(Optional)</span></label>
                     <input type="text" placeholder="Company Name" value={form.company} onChange={set('company')} />
                   </div>
-                  <div className="form-group">
-                    <label>Real Estate Experience <span className="required">*</span></label>
-                    <select value={form.experienceLevel} onChange={set('experienceLevel')}>
-                      <option value="">Select Experience Level</option>
-                      {EXPERIENCE_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
-                    </select>
-                  </div>
+                  {!hasAutoTerms && (
+                    <div className="form-group">
+                      <label>Real Estate Experience <span className="required">*</span></label>
+                      <select value={form.experienceLevel} onChange={set('experienceLevel')}>
+                        <option value="">Select Experience Level</option>
+                        {EXPERIENCE_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
-                {/* Live Deal Summary */}
+                {/* Sidebar — Terms Summary or Deal Summary */}
                 <div className="deal-summary">
-                  <div className="deal-summary-header">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>
-                    Deal Summary
-                  </div>
-                  <div className="deal-summary-body">
-                    <div className="ds-row">
-                      <span>Loan Program</span>
-                      <strong>{form.loanType || '—'}</strong>
-                    </div>
-                    {form.loanAmount && (
-                      <div className="ds-row highlight">
-                        <span>Loan Amount</span>
-                        <strong>{form.loanAmount}</strong>
+                  {generatedTerms ? (
+                    <>
+                      <div className="deal-summary-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>
+                        Term Sheet Summary
                       </div>
-                    )}
-                    {form.purchasePrice && (
-                      <div className="ds-row">
-                        <span>Purchase Price</span>
-                        <strong>{form.purchasePrice}</strong>
+                      <div className="deal-summary-body">
+                        <div className="ds-row highlight">
+                          <span>Program</span>
+                          <strong>{generatedTerms.programName}</strong>
+                        </div>
+                        <div className="ds-row highlight">
+                          <span>Est. Loan</span>
+                          <strong>${generatedTerms.estimatedLoan.toLocaleString()}</strong>
+                        </div>
+                        <div className="ds-row">
+                          <span>Rate</span>
+                          <strong>{generatedTerms.interestRate}% {generatedTerms.rateType}</strong>
+                        </div>
+                        <div className="ds-row">
+                          <span>Points</span>
+                          <strong>{generatedTerms.originationPoints}%</strong>
+                        </div>
+                        <div className="ds-row">
+                          <span>Term</span>
+                          <strong>{generatedTerms.maxTerm} Months</strong>
+                        </div>
+                        {generatedTerms.monthlyInterest && (
+                          <div className="ds-row">
+                            <span>Monthly Interest</span>
+                            <strong>${generatedTerms.monthlyInterest.toLocaleString()}</strong>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {form.city && (
-                      <div className="ds-row">
-                        <span>Location</span>
-                        <strong>{form.city}{form.state ? `, ${form.state}` : ''}</strong>
+                    </>
+                  ) : (
+                    <>
+                      <div className="deal-summary-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>
+                        Deal Summary
                       </div>
-                    )}
-                    {form.unitsOrLots && (
-                      <div className="ds-row">
-                        <span>{unitsLabel}</span>
-                        <strong>{form.unitsOrLots}</strong>
+                      <div className="deal-summary-body">
+                        <div className="ds-row">
+                          <span>Loan Program</span>
+                          <strong>{form.loanType || '\u2014'}</strong>
+                        </div>
+                        {form.loanAmount && (
+                          <div className="ds-row highlight">
+                            <span>Loan Amount</span>
+                            <strong>{form.loanAmount}</strong>
+                          </div>
+                        )}
+                        {form.purchasePrice && (
+                          <div className="ds-row">
+                            <span>Purchase Price</span>
+                            <strong>{form.purchasePrice}</strong>
+                          </div>
+                        )}
+                        {form.city && (
+                          <div className="ds-row">
+                            <span>Location</span>
+                            <strong>{form.city}{form.state ? `, ${form.state}` : ''}</strong>
+                          </div>
+                        )}
+                        {form.unitsOrLots && (
+                          <div className="ds-row">
+                            <span>{unitsLabel}</span>
+                            <strong>{form.unitsOrLots}</strong>
+                          </div>
+                        )}
+                        {showRehab && form.rehabBudget && (
+                          <div className="ds-row">
+                            <span>{rehabLabel}</span>
+                            <strong>{form.rehabBudget}</strong>
+                          </div>
+                        )}
+                        {form.exitStrategy && (
+                          <div className="ds-row">
+                            <span>Exit Strategy</span>
+                            <strong>{form.exitStrategy}</strong>
+                          </div>
+                        )}
+                        {form.timeline && (
+                          <div className="ds-row">
+                            <span>Timeline</span>
+                            <strong>{form.timeline}</strong>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {showRehab && form.rehabBudget && (
-                      <div className="ds-row">
-                        <span>{rehabLabel}</span>
-                        <strong>{form.rehabBudget}</strong>
-                      </div>
-                    )}
-                    {form.exitStrategy && (
-                      <div className="ds-row">
-                        <span>Exit Strategy</span>
-                        <strong>{form.exitStrategy}</strong>
-                      </div>
-                    )}
-                    {form.timeline && (
-                      <div className="ds-row">
-                        <span>Timeline</span>
-                        <strong>{form.timeline}</strong>
-                      </div>
-                    )}
-                  </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -557,9 +1031,9 @@ export default function ApplyPage() {
               Home
             </Link>
           )}
-          {step < 3 ? (
+          {step < totalSteps ? (
             <button type="button" className="btn-next" onClick={goNext}>
-              Continue
+              {step === 3 && generatedTerms ? 'Get My Term Sheet' : 'Continue'}
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
           ) : (
@@ -571,7 +1045,7 @@ export default function ApplyPage() {
                 </>
               ) : (
                 <>
-                  Submit Loan Request
+                  {generatedTerms ? 'Submit & Email Term Sheet' : 'Submit Loan Request'}
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </>
               )}
@@ -696,7 +1170,7 @@ const applyStyles = `
 
   /* ── Progress ── */
   .progress-section {
-    max-width: 600px;
+    max-width: 720px;
     margin: 40px auto 0;
     padding: 0 32px;
   }
@@ -1138,6 +1612,239 @@ const applyStyles = `
     color: rgba(255,255,255,0.25);
   }
 
+  /* ── Section Divider ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 36px 0 12px;
+  }
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+  }
+  .section-divider span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--champagne);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+  .section-subtitle {
+    font-size: 14px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  /* ── Term Sheet Display (Step 3) ── */
+  .term-program-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, rgba(198,169,98,0.15), rgba(198,169,98,0.05));
+    border: 1px solid rgba(198,169,98,0.35);
+    color: var(--champagne);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .terms-metrics-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .term-metric {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 28px 20px;
+    text-align: center;
+    transition: border-color 0.3s;
+    animation: stepIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .term-metric:nth-child(2) { animation-delay: 0.1s; }
+  .term-metric:nth-child(3) { animation-delay: 0.2s; }
+  .tm-value {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 400;
+    color: var(--champagne);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .tm-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .tm-note {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .terms-details-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 20px;
+    animation: stepIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.15s;
+    opacity: 0;
+  }
+  .tdc-header {
+    padding: 18px 24px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--champagne);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .tdc-body { padding: 8px 0; }
+  .tdc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .tdc-row:last-child { border-bottom: none; }
+  .tdc-row span {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+  }
+  .tdc-row strong {
+    font-size: 15px;
+    color: #fff;
+    font-weight: 600;
+  }
+  .tdc-row.highlight strong {
+    color: var(--champagne);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .tdc-note-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    font-size: 12px;
+    color: rgba(255,200,100,0.7);
+    background: rgba(255,200,100,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  /* Leverage bars */
+  .tdc-leverage-row {
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .tdc-leverage-row:last-child { border-bottom: none; }
+  .lev-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .lev-top span {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+  }
+  .lev-top strong {
+    font-size: 14px;
+    color: var(--champagne);
+    font-weight: 600;
+  }
+  .lev-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .lev-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--champagne), var(--champagne-lt));
+    border-radius: 3px;
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lev-detail {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .terms-disclaimer {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+  .terms-disclaimer svg { flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Custom Terms Card (non-auto-quote) ── */
+  .custom-terms-card {
+    text-align: center;
+    padding: 56px 40px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.08);
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .ctc-icon { width: 56px; height: 56px; margin: 0 auto 24px; }
+  .ctc-icon svg { width: 100%; height: 100%; }
+  .custom-terms-card h3 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 400;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .custom-terms-card p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+  .ctc-features {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .ctc-feature {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 500;
+  }
+  .ctc-note {
+    font-size: 13px !important;
+    color: rgba(255,255,255,0.35) !important;
+    margin-bottom: 0 !important;
+  }
+
   /* ── Responsive ── */
   @media (max-width: 800px) {
     .step3-layout { grid-template-columns: 1fr; }
@@ -1162,5 +1869,10 @@ const applyStyles = `
     .form-group input,
     .form-group select,
     .form-group textarea { font-size: 16px; padding: 12px 14px; }
+    .terms-metrics-row { grid-template-columns: 1fr; }
+    .term-metric { padding: 20px 16px; }
+    .tm-value { font-size: 28px; }
+    .ctc-features { flex-direction: column; align-items: center; }
+    .progress-section { max-width: 100%; }
   }
 `;
