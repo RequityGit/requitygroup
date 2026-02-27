@@ -55,7 +55,14 @@ export async function POST(request) {
         ? 'Rehab Budget'
         : 'Rehab/Renovation Budget';
 
-    const notifyEmail = process.env.NOTIFY_EMAIL || 'loans@requitygroup.com';
+    const notifyEmail = process.env.NOTIFY_EMAIL;
+    if (!notifyEmail) {
+      console.error('NOTIFY_EMAIL environment variable is not set');
+      return Response.json(
+        { error: 'Server configuration error. Please try again later.' },
+        { status: 500 }
+      );
+    }
     const timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
 
     // ─── Internal Notification Email ───
