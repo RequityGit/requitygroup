@@ -71,7 +71,6 @@ export default async function PortfolioPage() {
               <li><Link href="/lending">Lending</Link></li>
               <li><Link href="/portfolio" style={{ color: 'var(--champagne)' }}>Portfolio</Link></li>
               <li><Link href="/about">About</Link></li>
-              <li><Link href="/insights">Insights</Link></li>
               <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login &rarr;</a></li>
             </ul>
           </nav>

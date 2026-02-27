@@ -123,7 +123,6 @@ export default function InsightsPage() {
             <li><Link href="/lending">Lending</Link></li>
             <li><Link href="/portfolio">Portfolio</Link></li>
             <li><Link href="/about">About</Link></li>
-            <li><Link href="/insights" style={{ color: 'var(--champagne)' }}>Insights</Link></li>
             <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login →</a></li>
           </ul>
           <button className="mobile-toggle" id="mobileToggle" aria-label="Menu"><span></span><span></span><span></span></button>
