@@ -375,26 +375,38 @@ export default function ApplyPage() {
     });
     ac.addListener('place_changed', () => {
       const place = ac.getPlace();
-      if (!place.address_components) return;
-      let streetNumber = '', route = '', city = '', st = '', zip = '';
-      for (const c of place.address_components) {
-        const t = c.types;
-        if (t.includes('street_number')) streetNumber = c.long_name;
-        if (t.includes('route')) route = c.long_name;
-        if (t.includes('locality')) city = c.long_name;
-        if (t.includes('sublocality_level_1') && !city) city = c.long_name;
-        if (t.includes('administrative_area_level_1')) st = c.short_name;
-        if (t.includes('postal_code')) zip = c.long_name;
+
+      // Best case: full address components available
+      if (place.address_components) {
+        let streetNumber = '', route = '', city = '', st = '', zip = '';
+        for (const c of place.address_components) {
+          const t = c.types;
+          if (t.includes('street_number')) streetNumber = c.long_name;
+          if (t.includes('route')) route = c.long_name;
+          if (t.includes('locality')) city = c.long_name;
+          if (t.includes('sublocality_level_1') && !city) city = c.long_name;
+          if (t.includes('administrative_area_level_1')) st = c.short_name;
+          if (t.includes('postal_code')) zip = c.long_name;
+        }
+        const street = streetNumber ? `${streetNumber} ${route}` : route;
+        const displayAddress = [street, city, st].filter(Boolean).join(', ') + (zip ? ` ${zip}` : '');
+        if (addressInputRef.current) addressInputRef.current.value = displayAddress;
+        setForm((prev) => ({
+          ...prev,
+          propertyAddress: street || displayAddress || prev.propertyAddress,
+          city: city || prev.city,
+          state: st || prev.state,
+        }));
+        return;
       }
-      const street = streetNumber ? `${streetNumber} ${route}` : route;
-      const displayAddress = [street, city, st].filter(Boolean).join(', ') + (zip ? ` ${zip}` : '');
-      if (addressInputRef.current) addressInputRef.current.value = displayAddress;
-      setForm((prev) => ({
-        ...prev,
-        propertyAddress: street || prev.propertyAddress,
-        city: city || prev.city,
-        state: st || prev.state,
-      }));
+
+      // Fallback: use formatted_address, place name, or the input's current value
+      const fallback = place.formatted_address || place.name
+        || (addressInputRef.current ? addressInputRef.current.value : '');
+      if (fallback) {
+        if (addressInputRef.current) addressInputRef.current.value = fallback;
+        setForm((prev) => ({ ...prev, propertyAddress: fallback }));
+      }
     });
     autocompleteRef.current = ac;
   }, []);
@@ -416,6 +428,10 @@ export default function ApplyPage() {
       const t = setTimeout(() => initAutocomplete(), 150);
       return () => clearTimeout(t);
     } else {
+      // Clean up old autocomplete instance
+      if (autocompleteRef.current && window.google?.maps?.event) {
+        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      }
       autocompleteRef.current = null;
     }
   }, [step, initAutocomplete]);
@@ -453,6 +469,14 @@ export default function ApplyPage() {
   }
 
   function goNext() {
+    // Sync address input DOM value to form state (Google Places may update DOM directly)
+    if (step === 2 && addressInputRef.current) {
+      const domValue = addressInputRef.current.value;
+      if (domValue && domValue !== form.propertyAddress) {
+        setForm((prev) => ({ ...prev, propertyAddress: domValue }));
+      }
+    }
+
     const err = validateStep();
     if (err) { setError(err); return; }
 
@@ -643,7 +667,7 @@ export default function ApplyPage() {
               <div className="form-grid">
                 <div className="form-group full">
                   <label>Property Address</label>
-                  <input ref={addressInputRef} type="text" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="off" />
+                  <input ref={addressInputRef} type="text" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="new-password" />
                 </div>
                 <div className="form-group">
                   <label>Purchase Price {hasAutoTerms && <span className="required">*</span>}</label>
