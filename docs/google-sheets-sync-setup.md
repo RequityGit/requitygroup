@@ -38,19 +38,31 @@ Set up these exact column headers in Row 1:
 | F | `rate_type` | Fixed | Fixed or Variable |
 | G | `origination_points` | 2.0 | Origination fee (%) |
 | H | `points_note` | Typical | Typical, Minimum, etc. |
-| I | `max_ltv` | 70.0 | Max Loan-to-Value (%) |
-| J | `ltv_note` | Hard Cap | Hard Cap, Before adjustments, etc. |
-| K | `max_ltc` | 90.0 | Max Loan-to-Cost (%) |
-| L | `ltc_note` | Hard Cap | Hard Cap, Before adjustments, etc. |
-| M | `max_ltp` | 90.0 | Max Loan-to-Purchase (%) |
-| N | `max_term` | 12 | Loan term in months |
-| O | `term_note` | Extensions available | Additional term info |
-| P | `min_credit_score` | 650 | Minimum FICO (0 = no minimum) |
-| Q | `min_deals_24mo` | 3 | Min deals in 24 months (0 = none) |
-| R | `citizenship` | us_resident | `us_resident` or `any` |
-| S | `highlight_1` | Lowest rate available | Bullet point 1 (optional) |
-| T | `highlight_2` | Up to 90% of total cost | Bullet point 2 (optional) |
-| U | `highlight_3` | Up to 70% of ARV | Bullet point 3 (optional) |
+| I | `min_origination_fee` | 4000 | Floor in dollars (0 = no floor) |
+| J | `max_ltv` | 70.0 | Max Loan-to-Value (%) |
+| K | `ltv_note` | Hard Cap | Hard Cap, Before adjustments, etc. |
+| L | `max_ltc` | 90.0 | Max Loan-to-Cost (%) |
+| M | `ltc_note` | Hard Cap | Hard Cap, Before adjustments, etc. |
+| N | `max_ltp` | 90.0 | Max Loan-to-Purchase (%) |
+| O | `max_term` | 12 | Loan term in months |
+| P | `term_note` | Extensions available | Additional term info |
+| Q | `loan_term_months` | 12 | Actual loan term: 12, 18, or 24 |
+| R | `exit_points` | 0 | Points due at payoff: 0, 1, or 2 |
+| S | `legal_doc_fee` | 1250 | Legal & doc fee in dollars |
+| T | `bpo_appraisal_cost` | 350 | BPO/appraisal cost in dollars |
+| U | `bpo_appraisal_note` | Desktop BPO | Label for the appraisal line item |
+| V | `min_credit_score` | 650 | Minimum FICO (0 = no minimum) |
+| W | `min_deals_24mo` | 3 | Min deals in 24 months (0 = none) |
+| X | `citizenship` | us_resident | `us_resident` or `any` |
+| Y | `highlight_1` | Lowest rate available | Bullet point 1 (optional) |
+| Z | `highlight_2` | Up to 90% of total cost | Bullet point 2 (optional) |
+| AA | `highlight_3` | Up to 70% of ARV | Bullet point 3 (optional) |
+
+**New fields explained:**
+- `min_origination_fee`: Minimum fee floor. App calculates `MAX(loan × points%, floor)`.
+- `loan_term_months`: For commercial types (CRE Bridge, RV Park, Multifamily), create separate rows per term (12, 18, 24). Residential types are always 12.
+- `exit_points`: Tied to term length. 12mo → 0, 18mo → 1, 24mo → 2.
+- `legal_doc_fee`, `bpo_appraisal_cost`, `bpo_appraisal_note`: Appear on the emailed term sheet only (not on the instant quote page).
 
 ### Sample Data (Rows 2+)
 
@@ -95,7 +107,7 @@ Row 3: Fix & Flip — Balance Sheet      (fallback, accessible terms)
 - Connection: Connect your Google account
 - Spreadsheet: Select your pricing sheet
 - Sheet: "Pricing Matrix"
-- Range: `A1:U100` (adjust if you have more rows)
+- Range: `A1:AA100` (adjust if you have more rows)
 - This returns all rows including the header
 
 **Module 3: HTTP — Make a Request**

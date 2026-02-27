@@ -399,8 +399,19 @@ function buildInternalEmail(d) {
 }
 
 /* ─── Customer Term Sheet Email Builder ─── */
+const COMMERCIAL_LOAN_TYPES = ['CRE Bridge', 'RV Park', 'Multifamily'];
+
 function buildCustomerTermSheet(d) {
   const t = d.generatedTerms;
+  const isCommercial = COMMERCIAL_LOAN_TYPES.includes(d.loanType);
+
+  // Closing cost calculations
+  const originationFee = t.originationFee || 0;
+  const exitFee = t.exitFee || 0;
+  const legalDocFee = t.legalDocFee || 0;
+  const bpoAppraisalCost = t.bpoAppraisalCost || 0;
+  const bpoAppraisalNote = t.bpoAppraisalNote || 'BPO / Appraisal';
+  const totalClosingCosts = originationFee + exitFee + legalDocFee + bpoAppraisalCost;
   return `
 <!DOCTYPE html>
 <html>
@@ -450,12 +461,12 @@ function buildCustomerTermSheet(d) {
           <td style="width:33.33%;padding:24px 16px;background:rgba(198,169,98,0.06);border:1px solid rgba(198,169,98,0.15);text-align:center;vertical-align:top;">
             <div style="font-size:32px;font-weight:300;color:#C6A962;line-height:1.1;">${t.originationPoints}%</div>
             <div style="font-size:11px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:8px;">Origination</div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:3px;">${t.originationFee ? '$' + t.originationFee.toLocaleString() : '\u2014'}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:3px;">${t.originationFee ? '$' + t.originationFee.toLocaleString() + (t.originationFeeFloored ? ' ($' + (t.minOriginationFee || 0).toLocaleString() + ' minimum)' : '') : '\u2014'}</div>
           </td>
           <td style="width:33.33%;padding:24px 16px;background:rgba(198,169,98,0.06);border:1px solid rgba(198,169,98,0.15);text-align:center;vertical-align:top;">
-            <div style="font-size:32px;font-weight:300;color:#C6A962;line-height:1.1;">${t.maxTerm}</div>
+            <div style="font-size:32px;font-weight:300;color:#C6A962;line-height:1.1;">${t.loanTermMonths || t.maxTerm}</div>
             <div style="font-size:11px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:8px;">Months</div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:3px;">${t.termNote}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:3px;">${isCommercial && t.exitPoints > 0 ? t.exitPoints + ' exit point' + (t.exitPoints > 1 ? 's' : '') + ' at payoff' : (t.termNote || '')}</div>
           </td>
         </tr>
       </table>
@@ -488,7 +499,7 @@ function buildCustomerTermSheet(d) {
         ${t.originationFee ? `
         <tr>
           <td style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">Origination Fee (${t.originationPoints}%)</span>
+            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">Origination Fee (${t.originationPoints}%)${t.originationFeeFloored ? ' <span style="color:rgba(255,200,100,0.7);">($' + (t.minOriginationFee || 0).toLocaleString() + ' minimum)</span>' : ''}</span>
           </td>
           <td style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);text-align:right;">
             <span style="font-size:15px;color:#ffffff;">$${t.originationFee.toLocaleString()}</span>
@@ -539,6 +550,60 @@ function buildCustomerTermSheet(d) {
           </td>
         </tr>
       </table>
+    </div>
+
+    <!-- Estimated Closing Costs -->
+    <div style="padding:0 40px 24px;">
+      <h2 style="margin:0 0 16px;font-size:14px;color:#C6A962;letter-spacing:2px;text-transform:uppercase;font-weight:500;">
+        Estimated Closing Costs
+      </h2>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);width:50%;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">Origination Fee</span>
+          </td>
+          <td style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);text-align:right;">
+            <span style="font-size:15px;color:#ffffff;">$${originationFee.toLocaleString()}</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:12px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
+            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">Exit Fee${isCommercial && t.exitPoints > 0 ? ' (' + t.exitPoints + '%)' : ''}</span>
+          </td>
+          <td style="padding:12px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);text-align:right;">
+            <span style="font-size:15px;color:#ffffff;">$${exitFee.toLocaleString()}</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
+            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">Legal &amp; Documentation</span>
+          </td>
+          <td style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);text-align:right;">
+            <span style="font-size:15px;color:#ffffff;">$${legalDocFee.toLocaleString()}</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:12px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
+            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">${bpoAppraisalNote}</span>
+          </td>
+          <td style="padding:12px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);text-align:right;">
+            <span style="font-size:15px;color:#ffffff;">$${bpoAppraisalCost.toLocaleString()}</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:14px 16px;background:rgba(198,169,98,0.08);border:1px solid rgba(198,169,98,0.2);">
+            <span style="font-size:11px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;font-weight:600;">Estimated Total Closing Costs</span>
+          </td>
+          <td style="padding:14px 16px;background:rgba(198,169,98,0.08);border:1px solid rgba(198,169,98,0.2);text-align:right;">
+            <span style="font-size:18px;color:#C6A962;font-weight:700;">$${totalClosingCosts.toLocaleString()}</span>
+          </td>
+        </tr>
+      </table>
+      <div style="padding:12px 0 0;">
+        <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">
+          Costs are estimates and subject to change. Final amounts confirmed at closing.
+        </p>
+      </div>
     </div>
 
     <!-- Deal Summary -->

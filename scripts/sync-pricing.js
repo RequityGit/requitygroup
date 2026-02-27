@@ -42,9 +42,11 @@ async function fetchSheet() {
  *
  * Expected columns (header row):
  *   loan_type, arv_label, program_id, program_name, interest_rate,
- *   rate_type, origination_points, points_note, max_ltv, ltv_note,
- *   max_ltc, ltc_note, max_ltp, max_term, term_note, min_credit_score,
- *   min_deals_24mo, citizenship, highlight_1, highlight_2, highlight_3
+ *   rate_type, origination_points, points_note, min_origination_fee,
+ *   max_ltv, ltv_note, max_ltc, ltc_note, max_ltp, max_term, term_note,
+ *   loan_term_months, exit_points, legal_doc_fee, bpo_appraisal_cost,
+ *   bpo_appraisal_note, min_credit_score, min_deals_24mo, citizenship,
+ *   highlight_1, highlight_2, highlight_3
  */
 function parseRows(rows) {
   if (rows.length < 2) {
@@ -86,6 +88,7 @@ function parseRows(rows) {
         rateType: r.rate_type || 'Fixed',
         originationPoints: parseFloat(r.origination_points) || 0,
         pointsNote: r.points_note || '',
+        minOriginationFee: parseFloat(r.min_origination_fee) || 0,
         maxLTV: parseFloat(r.max_ltv) || 0,
         ltvNote: r.ltv_note || '',
         maxLTC: parseFloat(r.max_ltc) || 0,
@@ -93,6 +96,11 @@ function parseRows(rows) {
         maxLTP: parseFloat(r.max_ltp) || 0,
         maxTerm: parseInt(r.max_term) || 12,
         termNote: r.term_note || '',
+        loanTermMonths: parseInt(r.loan_term_months) || 12,
+        exitPoints: parseFloat(r.exit_points) || 0,
+        legalDocFee: parseFloat(r.legal_doc_fee) || 0,
+        bpoAppraisalCost: parseFloat(r.bpo_appraisal_cost) || 0,
+        bpoAppraisalNote: r.bpo_appraisal_note || '',
         requirements: {
           minCreditScore: parseInt(r.min_credit_score) || 0,
           minDeals24Months: parseInt(r.min_deals_24mo) || 0,
