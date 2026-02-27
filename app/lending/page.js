@@ -8,33 +8,55 @@ export const metadata = {
 
 export const revalidate = 300;
 
-const COLLECTION_NAMES = ['borrower-testimonials', 'borrower testimonials', 'testimonials'];
+const BORROWER_COLLECTION_NAMES = ['borrower-testimonials', 'borrower testimonials'];
+
+function mapTestimonialItem(item) {
+  const fd = item.fieldData || {};
+  return {
+    id: item.id || item._id,
+    name: fd.name || fd.title || fd['borrower-name'] || fd['author-name'] || fd.author || '',
+    quote: fd.quote || fd.testimonial || fd['quote-text'] || fd.text || fd.body || fd.content || '',
+    role: fd.role || fd.title_2 || fd['borrower-role'] || fd['loan-type'] || fd.subtitle || '',
+    category: fd.category || fd.type || fd['testimonial-type'] || '',
+  };
+}
+
+function isBorrowerTestimonial(item) {
+  const cat = item.category.toLowerCase();
+  return !cat || cat.includes('borrower') || cat.includes('lending');
+}
 
 async function getTestimonials() {
   if (!process.env.WEBFLOW_API_TOKEN || !process.env.WEBFLOW_SITE_ID) {
     return [];
   }
 
-  for (const name of COLLECTION_NAMES) {
+  // First, try dedicated borrower testimonials collections
+  for (const name of BORROWER_COLLECTION_NAMES) {
     try {
       const result = await findCollectionByName(name);
       if (result && result.items.length > 0) {
         return result.items
           .filter((item) => !item.isDraft && !item.isArchived)
-          .map((item) => {
-            const fd = item.fieldData || {};
-            return {
-              id: item.id || item._id,
-              name: fd.name || fd.title || fd['borrower-name'] || fd['author-name'] || fd.author || '',
-              quote: fd.quote || fd.testimonial || fd['quote-text'] || fd.text || fd.body || fd.content || '',
-              role: fd.role || fd.title_2 || fd['borrower-role'] || fd['loan-type'] || fd.subtitle || '',
-            };
-          })
+          .map(mapTestimonialItem)
           .filter((t) => t.quote);
       }
     } catch (err) {
       // Continue to next collection name
     }
+  }
+
+  // Fallback: generic "testimonials" collection — filter to borrower-only
+  try {
+    const result = await findCollectionByName('testimonials');
+    if (result && result.items.length > 0) {
+      return result.items
+        .filter((item) => !item.isDraft && !item.isArchived)
+        .map(mapTestimonialItem)
+        .filter((t) => t.quote && isBorrowerTestimonial(t));
+    }
+  } catch (err) {
+    // ignore
   }
 
   return [];
