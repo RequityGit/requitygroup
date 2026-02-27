@@ -1,4 +1,4 @@
-import { findCollectionByName, getField } from '../../lib/webflow';
+import { findCollectionByName, getOptionMap } from '../../lib/webflow';
 import LendingClient from './LendingClient';
 
 export const metadata = {
@@ -10,36 +10,20 @@ export const revalidate = 300;
 
 const BORROWER_COLLECTION_NAMES = ['borrower-testimonials', 'borrower testimonials'];
 
-function resolveOptionValue(raw) {
-  if (!raw) return '';
-  if (typeof raw === 'string') return raw.toLowerCase().trim();
-  if (typeof raw === 'object') return (raw.name || raw.slug || raw.value || '').toLowerCase().trim();
-  return '';
-}
-
-function getType(fd) {
-  // Check explicit field names first
-  const explicit = fd.type || fd['type-2'] || fd.category || fd['testimonial-type'] || fd['testimonial-category'];
-  if (explicit) return resolveOptionValue(explicit);
-
-  // Fallback: scan all keys for any field containing "type" or "category"
-  for (const key of Object.keys(fd)) {
-    const lk = key.toLowerCase();
-    if ((lk.includes('type') || lk.includes('category')) && fd[key]) {
-      return resolveOptionValue(fd[key]);
-    }
-  }
-  return '';
-}
-
-function mapTestimonialItem(item) {
+function mapTestimonialItem(item, typeOptionMap) {
   const fd = item.fieldData || {};
+
+  // Resolve the type field — could be a readable string or an opaque option ID
+  const rawType = fd.type || fd['type-2'] || fd.category || fd['testimonial-type'] || '';
+  const rawTypeStr = typeof rawType === 'string' ? rawType : (rawType?.name || rawType?.slug || '');
+  const resolvedType = typeOptionMap.get(rawTypeStr) || rawTypeStr.toLowerCase().trim();
+
   return {
     id: item.id || item._id,
     name: fd.name || fd.title || fd['borrower-name'] || fd['author-name'] || fd.author || '',
     quote: fd.quote || fd.testimonial || fd['quote-text'] || fd.text || fd.body || fd.content || '',
     role: fd.role || fd.company || fd.title_2 || fd['borrower-role'] || fd['loan-type'] || fd.subtitle || '',
-    type: getType(fd),
+    type: resolvedType,
   };
 }
 
@@ -57,9 +41,10 @@ async function getTestimonials() {
     try {
       const result = await findCollectionByName(name);
       if (result && result.items.length > 0) {
+        const typeOptionMap = await getOptionMap(result.collection.id, 'type');
         return result.items
           .filter((item) => !item.isDraft && !item.isArchived)
-          .map(mapTestimonialItem)
+          .map((item) => mapTestimonialItem(item, typeOptionMap))
           .filter((t) => t.quote);
       }
     } catch (err) {
@@ -67,31 +52,20 @@ async function getTestimonials() {
     }
   }
 
-  // Fallback: generic "testimonials" collection — filter to borrower-only
+  // Fallback: generic "testimonials" collection — resolve option IDs and filter to borrower-only
   try {
     const result = await findCollectionByName('testimonials');
     if (result && result.items.length > 0) {
-      // Debug: log first item's fieldData to diagnose field names and type format
-      const firstFd = result.items[0]?.fieldData || {};
-      console.log('[Testimonials Debug] Collection:', result.collection?.displayName, result.collection?.slug);
-      console.log('[Testimonials Debug] Field keys:', Object.keys(firstFd));
-      console.log('[Testimonials Debug] Type-related fields:', JSON.stringify(
-        Object.fromEntries(Object.entries(firstFd).filter(([k]) => {
-          const lk = k.toLowerCase();
-          return lk.includes('type') || lk.includes('category');
-        }))
-      ));
+      const typeOptionMap = await getOptionMap(result.collection.id, 'type');
 
       const mapped = result.items
         .filter((item) => !item.isDraft && !item.isArchived)
-        .map(mapTestimonialItem);
-
-      console.log('[Testimonials Debug] Mapped types:', mapped.map((t) => ({ name: t.name, type: t.type })));
+        .map((item) => mapTestimonialItem(item, typeOptionMap));
 
       return mapped.filter((t) => t.quote && isBorrowerTestimonial(t));
     }
   } catch (err) {
-    console.error('[Testimonials Error]', err);
+    // ignore
   }
 
   return [];
