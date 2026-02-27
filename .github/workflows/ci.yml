@@ -49,7 +49,6 @@ jobs:
           NEXT_PUBLIC_GOOGLE_PLACES_API_KEY: placeholder
           WEBFLOW_API_TOKEN: placeholder
           WEBFLOW_SITE_ID: placeholder
-          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
 
   netlify-deploy-preview:
     name: Netlify Deploy Preview
@@ -82,7 +81,6 @@ jobs:
           NEXT_PUBLIC_GOOGLE_PLACES_API_KEY: placeholder
           WEBFLOW_API_TOKEN: placeholder
           WEBFLOW_SITE_ID: placeholder
-          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
 
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
