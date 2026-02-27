@@ -4,7 +4,9 @@
 > Last Updated: February 2026
 > Status: Active
 
-This document serves as the single source of truth for pricing inputs across the Fix & Flip Premier Program and Balance Sheet Program. Update this document as programs evolve and sync any changes to the codebase in `app/apply/page.js` → `LOAN_PROGRAMS`.
+This document serves as a human-readable reference for pricing inputs across the Fix & Flip Premier Program and Balance Sheet Program.
+
+> **Pricing is now managed via Google Sheets.** The master pricing data lives in a Google Sheet ("Pricing Matrix" tab) and syncs to `data/pricing-config.json` every 24 hours via Make.com. See `docs/google-sheets-sync-setup.md` for setup instructions. The app reads from the JSON config — no code changes needed to update rates.
 
 ---
 
@@ -359,11 +361,14 @@ Premier → [New Tier] → Balance Sheet
 
 ### Codebase Reference
 
-All pricing parameters are defined in:
-- **File:** `app/apply/page.js`
-- **Constant:** `LOAN_PROGRAMS`
-- **Qualification Logic:** `qualifyForProgram()` function
-- **Calculation Logic:** `calculateTerms()` function
+All pricing parameters are now managed externally:
+- **Source of Truth:** Google Sheet ("Pricing Matrix" tab)
+- **Sync Config:** `data/pricing-config.json` (auto-synced via Make.com every 24h)
+- **Sync Docs:** `docs/google-sheets-sync-setup.md`
+- **Sync Endpoint:** `app/api/sync-pricing/route.js` (Make.com webhook)
+- **Sync Script:** `scripts/sync-pricing.js` (manual CLI sync)
+- **Qualification Logic:** `qualifyForProgram()` in `app/apply/page.js`
+- **Calculation Logic:** `calculateTerms()` in `app/apply/page.js`
 - **Term Sheet Generation:** `app/api/loan-request/route.js` → `buildCustomerTermSheet()`
 
 ---
@@ -373,7 +378,7 @@ All pricing parameters are defined in:
 | Date | Change | Updated By |
 |------|--------|------------|
 | Feb 2026 | Initial reference document created | — |
-| | | |
+| Feb 2026 | Migrated pricing to Google Sheets sync (data/pricing-config.json) | — |
 | | | |
 | | | |
 

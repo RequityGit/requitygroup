@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import pricingConfig from '../../data/pricing-config.json';
 
 /* ─── Loan Programs ─── */
 const LOAN_TYPES = [
@@ -128,58 +129,8 @@ const EXPERIENCE_LEVELS = [
   'Institutional / Fund',
 ];
 
-/* ─── Loan Program Requirements (extensible — add new loan types here) ─── */
-const LOAN_PROGRAMS = {
-  'Fix & Flip': {
-    arvLabel: 'After Repair Value (ARV)',
-    programs: [
-      {
-        id: 'premier',
-        name: 'Premier Program',
-        interestRate: 9.0,
-        rateType: 'Fixed',
-        originationPoints: 2.0,
-        pointsNote: 'Typical',
-        maxLTV: 70.0,
-        ltvNote: 'Hard Cap',
-        maxLTC: 90.0,
-        ltcNote: 'Hard Cap',
-        maxLTP: 90.0,
-        maxTerm: 12,
-        termNote: 'Extensions available',
-        requirements: {
-          minCreditScore: 650,
-          minDeals24Months: 3,
-          citizenship: 'us_resident',
-        },
-        highlights: ['Lowest rate available', 'Up to 90% of total cost', 'Up to 70% of ARV'],
-      },
-      {
-        id: 'balance_sheet',
-        name: 'Balance Sheet',
-        interestRate: 12.0,
-        rateType: 'Fixed',
-        originationPoints: 3.0,
-        pointsNote: 'Minimum',
-        maxLTV: 65.0,
-        ltvNote: 'Before adjustments',
-        maxLTC: 85.0,
-        ltcNote: 'Before adjustments',
-        maxLTP: 85.0,
-        maxTerm: 12,
-        termNote: 'Extensions available',
-        requirements: {
-          minCreditScore: 0,
-          minDeals24Months: 0,
-          citizenship: 'any',
-        },
-        highlights: ['No credit score minimum', 'New investors welcome', 'Foreign nationals OK'],
-      },
-    ],
-  },
-  // To add auto-quoting for another program, add an entry like:
-  // 'DSCR Rental': { arvLabel: 'Estimated Property Value', programs: [...] },
-};
+/* ─── Loan Program Pricing (synced from Google Sheets → data/pricing-config.json) ─── */
+const LOAN_PROGRAMS = pricingConfig.loanPrograms;
 
 const CREDIT_SCORE_RANGES = [
   '760 or higher',
