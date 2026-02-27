@@ -138,8 +138,8 @@ const EXPERIENCE_LEVELS = [
 /* ─── Loan Program Pricing (synced from Google Sheets → data/pricing-config.json) ─── */
 const LOAN_PROGRAMS = pricingConfig.loanPrograms;
 
-const COMMERCIAL_TYPES = ['CRE Bridge', 'RV Park', 'Multifamily'];
-const RESIDENTIAL_TYPES = ['Fix & Flip', 'DSCR Rental', 'Manufactured Housing', 'New Construction'];
+const COMMERCIAL_PROGRAM_IDS = ['CRE Bridge', 'RV Park', 'Multifamily'];
+const RESIDENTIAL_PROGRAM_IDS = ['Fix & Flip', 'DSCR Rental', 'Manufactured Housing', 'New Construction'];
 const TERM_OPTIONS = [
   { months: 12, exitPoints: 0, label: '12 Months', exitLabel: '0 exit points' },
   { months: 18, exitPoints: 1, label: '18 Months', exitLabel: '1 exit point' },
@@ -455,7 +455,7 @@ export default function ApplyPage() {
   }, [step, initAutocomplete]);
 
   const hasAutoTerms = !!LOAN_PROGRAMS[form.loanType];
-  const isCommercial = COMMERCIAL_TYPES.includes(form.loanType);
+  const isCommercial = COMMERCIAL_PROGRAM_IDS.includes(form.loanType);
   const totalSteps = 4;
 
   // For commercial types, find the program row matching the selected term
@@ -551,7 +551,7 @@ export default function ApplyPage() {
     // Calculate terms when moving to step 3
     if (step === 2 && hasAutoTerms) {
       let program;
-      if (COMMERCIAL_TYPES.includes(form.loanType)) {
+      if (COMMERCIAL_PROGRAM_IDS.includes(form.loanType)) {
         program = findProgramForTerm(form, selectedTermMonths);
       } else {
         program = qualifyForProgram(form);
