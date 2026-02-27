@@ -7,3 +7,4 @@
   # Google Places API key is a NEXT_PUBLIC_ var — intentionally embedded in client JS
   # and restricted by HTTP referrer on Google's side, not by secrecy
   SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_GOOGLE_PLACES_API_KEY"
