@@ -60,7 +60,7 @@ const indexStyles = `
     background: rgba(255,255,255,0.02);
     border-top: 1px solid rgba(255,255,255,0.04);
     border-bottom: 1px solid rgba(255,255,255,0.04);
-    padding: 20px 0;
+    padding: 14px 0;
   }
   .loan-indexes-inner {
     max-width: 1200px;
@@ -98,7 +98,7 @@ const indexStyles = `
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 8px 16px;
+    padding: 6px 14px;
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.05);
     border-radius: 8px;
