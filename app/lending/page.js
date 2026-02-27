@@ -11,20 +11,26 @@ export const revalidate = 300;
 
 const BORROWER_COLLECTION_NAMES = ['borrower-testimonials', 'borrower testimonials'];
 
+function getType(fd) {
+  const raw = fd.type || fd.category || fd['testimonial-type'] || '';
+  if (typeof raw === 'string') return raw.toLowerCase().trim();
+  if (typeof raw === 'object' && raw !== null) return (raw.name || raw.slug || '').toLowerCase().trim();
+  return '';
+}
+
 function mapTestimonialItem(item) {
   const fd = item.fieldData || {};
   return {
     id: item.id || item._id,
     name: fd.name || fd.title || fd['borrower-name'] || fd['author-name'] || fd.author || '',
     quote: fd.quote || fd.testimonial || fd['quote-text'] || fd.text || fd.body || fd.content || '',
-    role: fd.role || fd.title_2 || fd['borrower-role'] || fd['loan-type'] || fd.subtitle || '',
-    category: fd.category || fd.type || fd['testimonial-type'] || '',
+    role: fd.role || fd.company || fd.title_2 || fd['borrower-role'] || fd['loan-type'] || fd.subtitle || '',
+    type: getType(fd),
   };
 }
 
 function isBorrowerTestimonial(item) {
-  const cat = item.category.toLowerCase();
-  return !cat || cat.includes('borrower') || cat.includes('lending');
+  return item.type === 'borrower' || item.type === 'lending';
 }
 
 async function getTestimonials() {
