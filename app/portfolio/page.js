@@ -109,8 +109,8 @@ export default async function PortfolioPage() {
             <div className="section-eyebrow section-eyebrow-dark">Get Started</div>
             <h2 className="section-title">Interested in Investing?</h2>
             <p className="section-desc" style={{ margin: '0 auto 36px', textAlign: 'center', maxWidth: 500 }}>Gain access to institutional-quality real estate investments with transparent reporting and consistent distributions.</p>
-            <Link href="/income-fund" className="btn-primary-light">
-              Apply to Invest
+            <Link href="/request-access" className="btn-primary-light">
+              Request Access
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </Link>
           </div>
@@ -123,7 +123,7 @@ export default async function PortfolioPage() {
                 <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
               </div>
               <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
-              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/income-fund">Apply to Invest</Link></div>
+              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/request-access">Request Access</Link></div>
               <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Request a Quote</Link><Link href="/apply">Loan Application</Link></div>
             </div>
             <div className="footer-bottom">
