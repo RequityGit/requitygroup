@@ -630,7 +630,10 @@ export default function ApplyPage() {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Submission failed');
+      if (!res.ok) {
+        const debugStr = data.debug ? `\n[DEBUG: ${JSON.stringify(data.debug)}]` : '';
+        throw new Error((data.error || 'Submission failed') + debugStr);
+      }
       setSubmitted(true);
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');

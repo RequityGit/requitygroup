@@ -100,8 +100,17 @@ export async function POST(request) {
     return Response.json({ success: true, message: 'Loan request submitted successfully' });
   } catch (error) {
     console.error('Loan request error:', error);
+    const debugInfo = {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      hasSmtpHost: !!process.env.SMTP_HOST,
+      hasSmtpUser: !!process.env.SMTP_USER,
+      hasSmtpPass: !!process.env.SMTP_PASS,
+      hasNotifyEmail: !!process.env.NOTIFY_EMAIL,
+    };
     return Response.json(
-      { error: 'Failed to submit loan request. Please try again.' },
+      { error: 'Failed to submit loan request. Please try again.', debug: debugInfo },
       { status: 500 }
     );
   }
