@@ -360,16 +360,14 @@ export default function ApplyPage() {
   };
 
   const selectLoanType = (id) => {
+    if (form.loanType === id) {
+      setDirection(1);
+      setStep((s) => Math.min(s + 1, totalSteps));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     setForm((prev) => ({ ...prev, loanType: id }));
     setError('');
-  };
-
-  const selectLoanTypeAndContinue = (id) => {
-    setForm((prev) => ({ ...prev, loanType: id }));
-    setError('');
-    setDirection(1);
-    setStep((s) => Math.min(s + 1, totalSteps));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   /* ─── Google Places Autocomplete ─── */
@@ -650,7 +648,6 @@ export default function ApplyPage() {
                     type="button"
                     className={`loan-type-card ${form.loanType === lt.id ? 'selected' : ''}`}
                     onClick={() => selectLoanType(lt.id)}
-                    onDoubleClick={() => selectLoanTypeAndContinue(lt.id)}
                   >
                     <div className="lt-icon">{lt.icon}</div>
                     <div className="lt-label">{lt.label}</div>
@@ -1926,8 +1923,8 @@ const applyStyles = `
   .pac-item:first-child { border-top: none; }
   .pac-item:hover { background: rgba(198,169,98,0.1); }
   .pac-item-selected, .pac-item-selected:hover { background: rgba(198,169,98,0.15); }
-  .pac-item-query { color: #fff; font-weight: 500; }
-  .pac-matched { color: #C6A962; font-weight: 600; }
+  .pac-item-query { color: #fff; font-weight: 400; }
+  .pac-matched { color: inherit; font-weight: inherit; }
   .pac-icon { display: none; }
   .pac-item span:last-child { color: rgba(255,255,255,0.35); font-size: 12px; }
   .pac-logo::after { margin: 4px 12px; }
