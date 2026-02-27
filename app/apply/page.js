@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 /* ─── Loan Programs ─── */
@@ -116,15 +116,6 @@ const US_STATES = [
   'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY',
 ];
 
-const EXIT_STRATEGIES = [
-  'Refinance — Permanent Loan',
-  'Refinance — Agency Loan',
-  'Sell / Disposition',
-  'Refinance — Other Bridge',
-  'Hold Long-Term',
-  'Other',
-];
-
 const TIMELINES = [
   'Immediate — Under Contract',
   'Within 30 Days',
@@ -166,7 +157,6 @@ const LOAN_PROGRAMS = {
           minCreditScore: 650,
           minDeals24Months: 3,
           citizenship: 'us_resident',
-          entityPreferred: true,
         },
         highlights: ['Lowest rate available', 'Up to 90% of total cost', 'Up to 70% of ARV'],
       },
@@ -188,7 +178,6 @@ const LOAN_PROGRAMS = {
           minCreditScore: 0,
           minDeals24Months: 0,
           citizenship: 'any',
-          entityPreferred: false,
         },
         highlights: ['No credit score minimum', 'New investors welcome', 'Foreign nationals OK'],
       },
@@ -221,14 +210,6 @@ const CITIZENSHIP_OPTIONS = [
   'Permanent Resident (Green Card)',
   'Foreign National',
   'Other / Not Sure',
-];
-
-const ENTITY_OPTIONS = [
-  'Yes — LLC',
-  'Yes — Corporation',
-  'Yes — Other Entity',
-  'No — Individual',
-  'Planning to Form One',
 ];
 
 /* ─── Helpers ─── */
@@ -349,6 +330,8 @@ export default function ApplyPage() {
   const [error, setError] = useState('');
   const [generatedTerms, setGeneratedTerms] = useState(null);
   const formRef = useRef(null);
+  const addressInputRef = useRef(null);
+  const autocompleteRef = useRef(null);
 
   const [form, setForm] = useState({
     loanType: '',
@@ -360,14 +343,11 @@ export default function ApplyPage() {
     unitsOrLots: '',
     rehabBudget: '',
     afterRepairValue: '',
-    exitStrategy: '',
     timeline: '',
-    additionalNotes: '',
     // Borrower qualification fields
     creditScore: '',
     dealsInLast24Months: '',
     citizenshipStatus: '',
-    hasEntity: '',
     // Contact info
     firstName: '',
     lastName: '',
@@ -389,6 +369,59 @@ export default function ApplyPage() {
     setForm((prev) => ({ ...prev, loanType: id }));
     setError('');
   };
+
+  /* ─── Google Places Autocomplete ─── */
+  const initAutocomplete = useCallback(() => {
+    if (!addressInputRef.current || !window.google?.maps?.places || autocompleteRef.current) return;
+    const ac = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+      types: ['address'],
+      componentRestrictions: { country: 'us' },
+      fields: ['address_components', 'formatted_address'],
+    });
+    ac.addListener('place_changed', () => {
+      const place = ac.getPlace();
+      if (!place.address_components) return;
+      let streetNumber = '', route = '', city = '', st = '';
+      for (const c of place.address_components) {
+        const t = c.types;
+        if (t.includes('street_number')) streetNumber = c.long_name;
+        if (t.includes('route')) route = c.long_name;
+        if (t.includes('locality')) city = c.long_name;
+        if (t.includes('sublocality_level_1') && !city) city = c.long_name;
+        if (t.includes('administrative_area_level_1')) st = c.short_name;
+      }
+      const street = streetNumber ? `${streetNumber} ${route}` : route;
+      setForm((prev) => ({
+        ...prev,
+        propertyAddress: street || prev.propertyAddress,
+        city: city || prev.city,
+        state: st || prev.state,
+      }));
+    });
+    autocompleteRef.current = ac;
+  }, []);
+
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY) return;
+    if (window.google?.maps?.places) return;
+    if (document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')) return;
+    window.initGooglePlaces = () => initAutocomplete();
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}&libraries=places&callback=initGooglePlaces`;
+    s.async = true;
+    s.defer = true;
+    document.head.appendChild(s);
+    return () => { delete window.initGooglePlaces; };
+  }, [initAutocomplete]);
+
+  useEffect(() => {
+    if (step === 2) {
+      const t = setTimeout(() => initAutocomplete(), 100);
+      return () => clearTimeout(t);
+    } else {
+      autocompleteRef.current = null;
+    }
+  }, [step, initAutocomplete]);
 
   const hasAutoTerms = !!LOAN_PROGRAMS[form.loanType];
   const totalSteps = 4;
@@ -613,7 +646,7 @@ export default function ApplyPage() {
               <div className="form-grid">
                 <div className="form-group full">
                   <label>Property Address</label>
-                  <input type="text" placeholder="123 Main Street" value={form.propertyAddress} onChange={set('propertyAddress')} />
+                  <input ref={addressInputRef} type="text" placeholder="Start typing an address..." value={form.propertyAddress} onChange={set('propertyAddress')} autoComplete="off" />
                 </div>
                 <div className="form-group">
                   <label>City</label>
@@ -653,22 +686,11 @@ export default function ApplyPage() {
                   </div>
                 )}
                 <div className="form-group">
-                  <label>Exit Strategy</label>
-                  <select value={form.exitStrategy} onChange={set('exitStrategy')}>
-                    <option value="">Select Exit Strategy</option>
-                    {EXIT_STRATEGIES.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
                   <label>Timeline to Close</label>
                   <select value={form.timeline} onChange={set('timeline')}>
                     <option value="">Select Timeline</option>
                     {TIMELINES.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
-                </div>
-                <div className="form-group full">
-                  <label>Additional Notes</label>
-                  <textarea rows={3} placeholder="Any other details about the deal..." value={form.additionalNotes} onChange={set('additionalNotes')} />
                 </div>
               </div>
 
@@ -699,13 +721,6 @@ export default function ApplyPage() {
                       <select value={form.citizenshipStatus} onChange={set('citizenshipStatus')}>
                         <option value="">Select Status</option>
                         {CITIZENSHIP_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Entity Type</label>
-                      <select value={form.hasEntity} onChange={set('hasEntity')}>
-                        <option value="">Select Entity</option>
-                        {ENTITY_OPTIONS.map((e) => <option key={e} value={e}>{e}</option>)}
                       </select>
                     </div>
                   </div>
@@ -987,12 +1002,6 @@ export default function ApplyPage() {
                           <div className="ds-row">
                             <span>{rehabLabel}</span>
                             <strong>{form.rehabBudget}</strong>
-                          </div>
-                        )}
-                        {form.exitStrategy && (
-                          <div className="ds-row">
-                            <span>Exit Strategy</span>
-                            <strong>{form.exitStrategy}</strong>
                           </div>
                         )}
                         {form.timeline && (
@@ -1875,4 +1884,32 @@ const applyStyles = `
     .ctc-features { flex-direction: column; align-items: center; }
     .progress-section { max-width: 100%; }
   }
+
+  /* ── Google Places Autocomplete Dropdown ── */
+  .pac-container {
+    background: #0d1f35;
+    border: 1px solid rgba(198,169,98,0.3);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 4px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 10000;
+  }
+  .pac-item {
+    color: rgba(255,255,255,0.7);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.5;
+    transition: background 0.2s;
+  }
+  .pac-item:first-child { border-top: none; }
+  .pac-item:hover { background: rgba(198,169,98,0.1); }
+  .pac-item-selected, .pac-item-selected:hover { background: rgba(198,169,98,0.15); }
+  .pac-item-query { color: #fff; font-weight: 500; }
+  .pac-matched { color: #C6A962; font-weight: 600; }
+  .pac-icon { display: none; }
+  .pac-item span:last-child { color: rgba(255,255,255,0.35); font-size: 12px; }
+  .pac-logo::after { margin: 4px 12px; }
 `;
