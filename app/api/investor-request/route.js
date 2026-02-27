@@ -32,17 +32,19 @@ export async function POST(request) {
       );
     }
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: parseInt(process.env.SMTP_PORT || '587') === 465,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
     const notifyEmail = process.env.INVESTOR_NOTIFY_EMAIL;
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+      console.error('Missing SMTP configuration:', { smtpHost: !!smtpHost, smtpUser: !!smtpUser, smtpPass: !!smtpPass });
+      return Response.json(
+        { error: 'Server configuration error. Please try again later.' },
+        { status: 500 }
+      );
+    }
+
     if (!notifyEmail) {
       console.error('INVESTOR_NOTIFY_EMAIL environment variable is not set');
       return Response.json(
@@ -50,6 +52,16 @@ export async function POST(request) {
         { status: 500 }
       );
     }
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: parseInt(process.env.SMTP_PORT || '587') === 465,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
     const contactEmail = process.env.INVESTOR_CONTACT_EMAIL || notifyEmail;
     const timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
 
@@ -72,9 +84,9 @@ export async function POST(request) {
 
     return Response.json({ success: true, message: 'Request submitted successfully' });
   } catch (error) {
-    console.error('Investor request error:', error);
+    console.error('Investor request error:', error?.message || error);
     return Response.json(
-      { error: 'Failed to submit request. Please try again.' },
+      { error: `Failed to submit request: ${error?.message || 'Unknown error'}. Please try again.` },
       { status: 500 }
     );
   }
