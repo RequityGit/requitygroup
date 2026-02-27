@@ -218,7 +218,7 @@ export default function LendingClient({ testimonials = [], loanIndexes = null })
 
         <LoanIndexes indexes={loanIndexes} />
 
-        <div style={{ height: 64, background: 'var(--navy-deep)' }} />
+        <div style={{ height: 32, background: 'var(--navy-deep)' }} />
       </div>
 
       {/* Curved transition */}
