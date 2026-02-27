@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import pricingConfig from '../../data/pricing-config.json';
 
 /* ─── Loan Programs ─── */
 const LOAN_TYPES = [
@@ -128,58 +129,16 @@ const EXPERIENCE_LEVELS = [
   'Institutional / Fund',
 ];
 
-/* ─── Loan Program Requirements (extensible — add new loan types here) ─── */
-const LOAN_PROGRAMS = {
-  'Fix & Flip': {
-    arvLabel: 'After Repair Value (ARV)',
-    programs: [
-      {
-        id: 'premier',
-        name: 'Premier Program',
-        interestRate: 9.0,
-        rateType: 'Fixed',
-        originationPoints: 2.0,
-        pointsNote: 'Typical',
-        maxLTV: 70.0,
-        ltvNote: 'Hard Cap',
-        maxLTC: 90.0,
-        ltcNote: 'Hard Cap',
-        maxLTP: 90.0,
-        maxTerm: 12,
-        termNote: 'Extensions available',
-        requirements: {
-          minCreditScore: 650,
-          minDeals24Months: 3,
-          citizenship: 'us_resident',
-        },
-        highlights: ['Lowest rate available', 'Up to 90% of total cost', 'Up to 70% of ARV'],
-      },
-      {
-        id: 'balance_sheet',
-        name: 'Balance Sheet',
-        interestRate: 12.0,
-        rateType: 'Fixed',
-        originationPoints: 3.0,
-        pointsNote: 'Minimum',
-        maxLTV: 65.0,
-        ltvNote: 'Before adjustments',
-        maxLTC: 85.0,
-        ltcNote: 'Before adjustments',
-        maxLTP: 85.0,
-        maxTerm: 12,
-        termNote: 'Extensions available',
-        requirements: {
-          minCreditScore: 0,
-          minDeals24Months: 0,
-          citizenship: 'any',
-        },
-        highlights: ['No credit score minimum', 'New investors welcome', 'Foreign nationals OK'],
-      },
-    ],
-  },
-  // To add auto-quoting for another program, add an entry like:
-  // 'DSCR Rental': { arvLabel: 'Estimated Property Value', programs: [...] },
-};
+/* ─── Loan Program Pricing (synced from Google Sheets → data/pricing-config.json) ─── */
+const LOAN_PROGRAMS = pricingConfig.loanPrograms;
+
+const COMMERCIAL_TYPES = ['CRE Bridge', 'RV Park', 'Multifamily'];
+const RESIDENTIAL_TYPES = ['Fix & Flip', 'DSCR Rental', 'Manufactured Housing', 'New Construction'];
+const TERM_OPTIONS = [
+  { months: 12, exitPoints: 0, label: '12 Months', exitLabel: '0 exit points' },
+  { months: 18, exitPoints: 1, label: '18 Months', exitLabel: '1 exit point' },
+  { months: 24, exitPoints: 2, label: '24 Months', exitLabel: '2 exit points' },
+];
 
 const CREDIT_SCORE_RANGES = [
   '760 or higher',
@@ -286,8 +245,23 @@ function calculateTerms(form, program) {
         : maxLoan
       : requestedLoan;
 
-  const originationFee = estimatedLoan > 0 ? Math.floor(estimatedLoan * (program.originationPoints / 100)) : null;
+  // Origination fee with minimum floor
+  const minFee = program.minOriginationFee || 0;
+  const calculatedFee = estimatedLoan > 0 ? Math.floor(estimatedLoan * (program.originationPoints / 100)) : 0;
+  const originationFee = estimatedLoan > 0 ? Math.max(calculatedFee, minFee) : null;
+  const originationFeeFloored = minFee > 0 && calculatedFee < minFee;
+
   const monthlyInterest = estimatedLoan > 0 ? Math.round((estimatedLoan * (program.interestRate / 100)) / 12) : null;
+
+  // Term and exit points
+  const loanTermMonths = program.loanTermMonths || program.maxTerm || 12;
+  const exitPoints = program.exitPoints || 0;
+  const exitFee = estimatedLoan > 0 ? Math.floor(estimatedLoan * (exitPoints / 100)) : 0;
+
+  // Term sheet only fields
+  const legalDocFee = program.legalDocFee || 0;
+  const bpoAppraisalCost = program.bpoAppraisalCost || 0;
+  const bpoAppraisalNote = program.bpoAppraisalNote || '';
 
   return {
     programName: program.name,
@@ -295,14 +269,22 @@ function calculateTerms(form, program) {
     interestRate: program.interestRate,
     rateType: program.rateType,
     originationPoints: program.originationPoints,
+    minOriginationFee: minFee,
     maxLTV: program.maxLTV,
     maxLTC: program.maxLTC,
     maxLTP: program.maxLTP,
     maxTerm: program.maxTerm,
     termNote: program.termNote,
+    loanTermMonths,
+    exitPoints,
+    exitFee,
+    legalDocFee,
+    bpoAppraisalCost,
+    bpoAppraisalNote,
     maxLoan,
     estimatedLoan,
     originationFee,
+    originationFeeFloored,
     monthlyInterest,
     maxByLTV,
     maxByLTC,
@@ -327,6 +309,7 @@ export default function ApplyPage() {
   const addressInputRef = useRef(null);
   const autocompleteRef = useRef(null);
 
+  const [selectedTermMonths, setSelectedTermMonths] = useState(12);
   const [form, setForm] = useState({
     loanType: '',
     propertyAddress: '',
@@ -443,7 +426,27 @@ export default function ApplyPage() {
   }, [step, initAutocomplete]);
 
   const hasAutoTerms = !!LOAN_PROGRAMS[form.loanType];
+  const isCommercial = COMMERCIAL_TYPES.includes(form.loanType);
   const totalSteps = 4;
+
+  // For commercial types, find the program row matching the selected term
+  function findProgramForTerm(form, termMonths) {
+    const config = LOAN_PROGRAMS[form.loanType];
+    if (!config || config.programs.length === 0) return null;
+    const match = config.programs.find((p) => p.loanTermMonths === termMonths);
+    return match || config.programs[0];
+  }
+
+  function handleTermChange(months) {
+    setSelectedTermMonths(months);
+    if (hasAutoTerms && isCommercial) {
+      const program = findProgramForTerm(form, months);
+      if (program) {
+        const terms = calculateTerms(form, program);
+        setGeneratedTerms(terms);
+      }
+    }
+  }
   const showRehab = ['Fix & Flip', 'New Construction', 'CRE Bridge'].includes(form.loanType);
   const rehabLabel = form.loanType === 'New Construction' ? 'Construction Budget' : form.loanType === 'Fix & Flip' ? 'Rehab Budget' : 'Rehab / Renovation Budget';
   const unitsLabel = ['Manufactured Housing', 'RV Park', 'Multifamily'].includes(form.loanType) ? 'Number of Units' : 'Number of Units / Lots';
@@ -488,7 +491,12 @@ export default function ApplyPage() {
 
     // Calculate terms when moving to step 3
     if (step === 2 && hasAutoTerms) {
-      const program = qualifyForProgram(form);
+      let program;
+      if (COMMERCIAL_TYPES.includes(form.loanType)) {
+        program = findProgramForTerm(form, selectedTermMonths);
+      } else {
+        program = qualifyForProgram(form);
+      }
       if (program) {
         const terms = calculateTerms(form, program);
         setGeneratedTerms(terms);
@@ -771,14 +779,42 @@ export default function ApplyPage() {
                     <div className="term-metric">
                       <div className="tm-value">{generatedTerms.originationPoints}%</div>
                       <div className="tm-label">Origination</div>
-                      <div className="tm-note">{generatedTerms.originationFee ? '$' + generatedTerms.originationFee.toLocaleString() : '—'}</div>
+                      <div className="tm-note">
+                        {generatedTerms.originationFee
+                          ? <>{'$' + generatedTerms.originationFee.toLocaleString()}{generatedTerms.originationFeeFloored && <span className="fee-floor-note"> (${generatedTerms.minOriginationFee.toLocaleString()} minimum)</span>}</>
+                          : '—'}
+                      </div>
                     </div>
                     <div className="term-metric">
-                      <div className="tm-value">{generatedTerms.maxTerm} Mo</div>
+                      <div className="tm-value">{generatedTerms.loanTermMonths} Mo</div>
                       <div className="tm-label">Loan Term</div>
-                      <div className="tm-note">{generatedTerms.termNote}</div>
+                      <div className="tm-note">
+                        {isCommercial && generatedTerms.exitPoints > 0
+                          ? `${generatedTerms.exitPoints} exit point${generatedTerms.exitPoints > 1 ? 's' : ''} at payoff`
+                          : generatedTerms.termNote}
+                      </div>
                     </div>
                   </div>
+
+                  {/* Term Selector — Commercial types only */}
+                  {isCommercial && (
+                    <div className="term-selector-section">
+                      <div className="term-selector-label">Select Loan Term</div>
+                      <div className="term-selector-options">
+                        {TERM_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.months}
+                            type="button"
+                            className={`term-option ${selectedTermMonths === opt.months ? 'selected' : ''}`}
+                            onClick={() => handleTermChange(opt.months)}
+                          >
+                            <div className="term-option-months">{opt.label}</div>
+                            <div className="term-option-exit">{opt.exitLabel}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Estimated Loan Details */}
                   <div className="terms-details-card">
@@ -802,7 +838,7 @@ export default function ApplyPage() {
                       )}
                       {generatedTerms.originationFee !== null && (
                         <div className="tdc-row">
-                          <span>Origination Fee ({generatedTerms.originationPoints}%)</span>
+                          <span>Origination Fee ({generatedTerms.originationPoints}%){generatedTerms.originationFeeFloored ? <span className="fee-floor-note"> (${generatedTerms.minOriginationFee.toLocaleString()} minimum)</span> : ''}</span>
                           <strong>${generatedTerms.originationFee.toLocaleString()}</strong>
                         </div>
                       )}
@@ -969,8 +1005,14 @@ export default function ApplyPage() {
                         </div>
                         <div className="ds-row">
                           <span>Term</span>
-                          <strong>{generatedTerms.maxTerm} Months</strong>
+                          <strong>{generatedTerms.loanTermMonths} Months</strong>
                         </div>
+                        {isCommercial && generatedTerms.exitPoints > 0 && (
+                          <div className="ds-row">
+                            <span>Exit Points</span>
+                            <strong>{generatedTerms.exitPoints}%</strong>
+                          </div>
+                        )}
                         {generatedTerms.monthlyInterest && (
                           <div className="ds-row">
                             <span>Monthly Interest</span>
@@ -1825,6 +1867,63 @@ const applyStyles = `
   }
   .terms-disclaimer svg { flex-shrink: 0; margin-top: 1px; }
 
+  /* ── Term Selector (Commercial) ── */
+  .term-selector-section {
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+  .term-selector-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .term-selector-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .term-option {
+    padding: 16px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s;
+    color: #fff;
+    font-family: inherit;
+  }
+  .term-option:hover {
+    border-color: rgba(198,169,98,0.4);
+    background: rgba(198,169,98,0.06);
+  }
+  .term-option.selected {
+    border-color: var(--champagne);
+    background: rgba(198,169,98,0.1);
+    box-shadow: 0 0 0 1px var(--champagne);
+  }
+  .term-option-months {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .term-option-exit {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+  }
+  .term-option.selected .term-option-exit {
+    color: var(--champagne);
+  }
+
+  /* Fee floor note */
+  .fee-floor-note {
+    font-size: 10px;
+    color: rgba(255,200,100,0.7);
+  }
+
   /* ── Custom Terms Card (non-auto-quote) ── */
   .custom-terms-card {
     text-align: center;
@@ -1897,6 +1996,7 @@ const applyStyles = `
     .terms-metrics-row { grid-template-columns: 1fr; }
     .term-metric { padding: 20px 16px; }
     .tm-value { font-size: 28px; }
+    .term-selector-options { grid-template-columns: 1fr; }
     .ctc-features { flex-direction: column; align-items: center; }
     .progress-section { max-width: 100%; }
   }

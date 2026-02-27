@@ -4,7 +4,9 @@
 > Last Updated: February 2026
 > Status: Active
 
-This document serves as the single source of truth for pricing inputs across the Fix & Flip Premier Program and Balance Sheet Program. Update this document as programs evolve and sync any changes to the codebase in `app/apply/page.js` → `LOAN_PROGRAMS`.
+This document serves as a human-readable reference for pricing inputs across the Fix & Flip Premier Program and Balance Sheet Program.
+
+> **Pricing is now managed via Google Sheets.** The master pricing data lives in a Google Sheet ("Pricing Matrix" tab) and syncs to `data/pricing-config.json` every 24 hours via Make.com. See `docs/google-sheets-sync-setup.md` for setup instructions. The app reads from the JSON config — no code changes needed to update rates.
 
 ---
 
@@ -222,9 +224,38 @@ Estimated Loan  =  MIN(Requested Amount, Maximum Loan)
 ### Fee Calculations
 
 ```
-Origination Fee   =  Estimated Loan × (Origination Points / 100)
+Calculated Fee    =  Estimated Loan × (Origination Points / 100)
+Origination Fee   =  MAX(Calculated Fee, Min Origination Fee)
 Monthly Interest  =  (Estimated Loan × (Interest Rate / 100)) / 12
+Exit Fee          =  Estimated Loan × (Exit Points / 100)
 ```
+
+If the min origination fee floor kicks in, the app displays a note like "($4,000 minimum)" next to the points display.
+
+### Estimated Closing Costs (Term Sheet Only)
+
+The emailed term sheet includes an "Estimated Closing Costs" breakdown:
+
+| Line Item | Source |
+|-----------|--------|
+| Origination Fee | MAX(loan × points%, min_origination_fee) |
+| Exit Fee | loan_amount × exit_points% ($0 for 12-month terms) |
+| Legal & Documentation | `legalDocFee` from config |
+| BPO / Appraisal | `bpoAppraisalCost` from config (label from `bpoAppraisalNote`) |
+| **Estimated Total** | Sum of above |
+
+A disclaimer follows: "Costs are estimates and subject to change. Final amounts confirmed at closing."
+
+### Term & Exit Points
+
+| Term | Exit Points | Applies To |
+|------|-------------|-----------|
+| 12 months | 0 | All loan types |
+| 18 months | 1 | Commercial only (CRE Bridge, RV Park, Multifamily) |
+| 24 months | 2 | Commercial only (CRE Bridge, RV Park, Multifamily) |
+
+- **Residential types** (Fix & Flip, DSCR Rental, Manufactured Housing, New Construction): Always 12 months, no term selector shown.
+- **Commercial types** (CRE Bridge, RV Park, Multifamily): Term selector with 12/18/24 month options. Each term is a separate row in the pricing config with its own rates.
 
 ### ARV Label
 
@@ -258,7 +289,7 @@ For Fix & Flip programs, the ARV field is labeled: **"After Repair Value (ARV)"*
 
 | Fee | Formula | Amount |
 |-----|---------|--------|
-| Origination Fee | $180,000 × 2.0% | **$3,600** |
+| Origination Fee | MAX($180,000 × 2.0%, $4,000) = MAX($3,600, $4,000) | **$4,000** (floor) |
 | Monthly Interest | ($180,000 × 9.0%) / 12 | **$1,350/mo** |
 
 ---
@@ -287,7 +318,7 @@ For Fix & Flip programs, the ARV field is labeled: **"After Repair Value (ARV)"*
 
 | Fee | Formula | Amount |
 |-----|---------|--------|
-| Origination Fee | $127,500 × 3.0% | **$3,825** |
+| Origination Fee | MAX($127,500 × 3.0%, $4,000) = MAX($3,825, $4,000) | **$4,000** (floor) |
 | Monthly Interest | ($127,500 × 12.0%) / 12 | **$1,275/mo** |
 
 ---
@@ -319,7 +350,7 @@ Requested $350,000 > Max $270,000 → **Capped at $270,000**
 
 | Fee | Formula | Amount |
 |-----|---------|--------|
-| Origination Fee | $270,000 × 2.0% | **$5,400** |
+| Origination Fee | MAX($270,000 × 2.0%, $4,000) = MAX($5,400, $4,000) | **$5,400** |
 | Monthly Interest | ($270,000 × 9.0%) / 12 | **$2,025/mo** |
 
 ---
@@ -331,10 +362,12 @@ Requested $350,000 > Max $270,000 → **Capped at $270,000**
 | Fee Type | Premier | Balance Sheet | Notes |
 |----------|---------|---------------|-------|
 | Origination Points | 2.0% | 3.0% (min) | Charged at closing on loan amount |
+| Min Origination Fee | $4,000 | $4,000 | Floor — borrower pays the higher of % calc or floor |
+| Exit Points | 0% (12mo) | 0% (12mo) | Commercial: 1% at 18mo, 2% at 24mo |
+| Legal & Documentation | $1,250 | $1,250 | Borrower-paid at closing |
+| BPO / Appraisal | $350 | $350 | Desktop BPO |
 | Extension Fee | TBD | TBD | Per extension, if applicable |
 | Draw / Inspection Fee | TBD | TBD | Per rehab draw, if applicable |
-| Appraisal / BPO | TBD | TBD | May vary by deal size |
-| Legal / Doc Prep | TBD | TBD | Borrower-paid at closing |
 | Wire / Funding Fee | TBD | TBD | If applicable |
 | Late Payment Fee | TBD | TBD | As outlined in loan docs |
 
@@ -359,11 +392,14 @@ Premier → [New Tier] → Balance Sheet
 
 ### Codebase Reference
 
-All pricing parameters are defined in:
-- **File:** `app/apply/page.js`
-- **Constant:** `LOAN_PROGRAMS`
-- **Qualification Logic:** `qualifyForProgram()` function
-- **Calculation Logic:** `calculateTerms()` function
+All pricing parameters are now managed externally:
+- **Source of Truth:** Google Sheet ("Pricing Matrix" tab)
+- **Sync Config:** `data/pricing-config.json` (auto-synced via Make.com every 24h)
+- **Sync Docs:** `docs/google-sheets-sync-setup.md`
+- **Sync Endpoint:** `app/api/sync-pricing/route.js` (Make.com webhook)
+- **Sync Script:** `scripts/sync-pricing.js` (manual CLI sync)
+- **Qualification Logic:** `qualifyForProgram()` in `app/apply/page.js`
+- **Calculation Logic:** `calculateTerms()` in `app/apply/page.js`
 - **Term Sheet Generation:** `app/api/loan-request/route.js` → `buildCustomerTermSheet()`
 
 ---
@@ -373,9 +409,8 @@ All pricing parameters are defined in:
 | Date | Change | Updated By |
 |------|--------|------------|
 | Feb 2026 | Initial reference document created | — |
-| | | |
-| | | |
-| | | |
+| Feb 2026 | Migrated pricing to Google Sheets sync (data/pricing-config.json) | — |
+| Feb 2026 | Added min origination fee, loan term selector, exit points, closing costs to term sheet | — |
 
 ---
 
