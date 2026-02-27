@@ -325,8 +325,8 @@ export default function IncomeFundPage() {
               <div className="if-cta-eyebrow">Get Started</div>
               <h2>Ready to Earn <em>Monthly Income?</em></h2>
               <p>Join our community of sophisticated investors earning consistent, asset-backed returns. Request information today and our team will be in touch.</p>
-              <Link href="/apply-to-invest" className="btn-primary" style={{ borderRadius: 8 }}>
-                Apply to Invest <ArrowIcon />
+              <Link href="/request-access" className="btn-primary" style={{ borderRadius: 8 }}>
+                Request Access <ArrowIcon />
               </Link>
             </div>
           </section>
@@ -339,7 +339,7 @@ export default function IncomeFundPage() {
                 <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
               </div>
               <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
-              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/income-fund">Apply to Invest</Link></div>
+              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/request-access">Request Access</Link></div>
               <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Request a Quote</Link><Link href="/apply">Loan Application</Link></div>
             </div>
             <div className="footer-bottom">

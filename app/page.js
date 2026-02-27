@@ -68,7 +68,7 @@ export default function HomePage() {
             <h1>Investing &amp; lending in <em>value-add</em> real estate</h1>
             <p className="hp-hero-p">We apply operational expertise to small-cap real estate — creating value in niche markets that institutional capital cannot efficiently pursue.</p>
             <div className="hp-hero-btns">
-              <Link href="/income-fund" className="btn-primary">Join Investor List <ArrowIcon /></Link>
+              <Link href="/request-access" className="btn-primary">Request Access <ArrowIcon /></Link>
               <Link href="/apply" className="btn-primary">Request a Loan <ArrowIcon /></Link>
             </div>
           </div>
@@ -223,7 +223,7 @@ export default function HomePage() {
                 <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
               </div>
               <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
-              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/income-fund">Apply to Invest</Link></div>
+              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/request-access">Request Access</Link></div>
               <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Request a Quote</Link><Link href="/apply">Loan Application</Link></div>
             </div>
             <div className="footer-bottom">
