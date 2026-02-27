@@ -328,11 +328,7 @@ export default function ApplyPage() {
   const [loanCategory, setLoanCategory] = useState(null);
   const formRef = useRef(null);
   const addressInputRef = useRef(null);
-  const autocompleteServiceRef = useRef(null);
-  const placesServiceRef = useRef(null);
-  const [addressPredictions, setAddressPredictions] = useState([]);
-  const [showPredictions, setShowPredictions] = useState(false);
-  const predictionsDebounceRef = useRef(null);
+  const autocompleteRef = useRef(null);
 
   const [selectedTermMonths, setSelectedTermMonths] = useState(12);
   const [form, setForm] = useState({
@@ -428,136 +424,102 @@ export default function ApplyPage() {
     setError('');
   };
 
-  /* ─── Google Places Autocomplete (custom dropdown, no widget) ─── */
-  const ensurePlacesServices = useCallback(() => {
-    if (!window.google?.maps?.places) return false;
-    if (!autocompleteServiceRef.current) {
-      autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
-    }
-    if (!placesServiceRef.current) {
-      const container = document.createElement('div');
-      container.style.display = 'none';
-      document.body.appendChild(container);
-      placesServiceRef.current = new window.google.maps.places.PlacesService(container);
-    }
-    return true;
+  /* ─── Google Places Autocomplete (widget + MutationObserver icon stripping) ─── */
+  const initAutocomplete = useCallback(() => {
+    if (!addressInputRef.current || !window.google?.maps?.places) return;
+    if (autocompleteRef.current) return;
+    const ac = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+      types: ['address'],
+      componentRestrictions: { country: 'us' },
+      fields: ['address_components', 'formatted_address'],
+    });
+    ac.addListener('place_changed', () => {
+      const place = ac.getPlace();
+      if (place.address_components) {
+        let streetNumber = '', route = '', city = '', st = '', zip = '';
+        for (const c of place.address_components) {
+          const t = c.types;
+          if (t.includes('street_number')) streetNumber = c.long_name;
+          if (t.includes('route')) route = c.long_name;
+          if (t.includes('locality')) city = c.long_name;
+          if (t.includes('sublocality_level_1') && !city) city = c.long_name;
+          if (t.includes('administrative_area_level_1')) st = c.short_name;
+          if (t.includes('postal_code')) zip = c.long_name;
+        }
+        const street = streetNumber ? `${streetNumber} ${route}` : route;
+        const displayAddress = [street, city, st].filter(Boolean).join(', ') + (zip ? ` ${zip}` : '');
+        if (addressInputRef.current) addressInputRef.current.value = displayAddress;
+        setForm((prev) => ({
+          ...prev,
+          propertyAddress: street || displayAddress || prev.propertyAddress,
+          city: city || prev.city,
+          state: st || prev.state,
+        }));
+        return;
+      }
+      const fallback = place.formatted_address || place.name
+        || (addressInputRef.current ? addressInputRef.current.value : '');
+      if (fallback) {
+        if (addressInputRef.current) addressInputRef.current.value = fallback;
+        setForm((prev) => ({ ...prev, propertyAddress: fallback }));
+      }
+    });
+    autocompleteRef.current = ac;
   }, []);
 
+  // Load the Google Maps script once on mount
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY) return;
-    if (window.google?.maps?.places) { ensurePlacesServices(); return; }
+    if (window.google?.maps?.places) { initAutocomplete(); return; }
     const existing = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]');
     if (existing) {
-      if (existing.getAttribute('data-loaded') === 'true') { ensurePlacesServices(); return; }
-      existing.addEventListener('load', () => { existing.setAttribute('data-loaded', 'true'); ensurePlacesServices(); }, { once: true });
+      existing.addEventListener('load', () => initAutocomplete(), { once: true });
+      if (window.google?.maps?.places) initAutocomplete();
       return;
     }
     const s = document.createElement('script');
     s.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}&libraries=places`;
     s.async = true;
     s.defer = true;
-    s.onload = () => { s.setAttribute('data-loaded', 'true'); ensurePlacesServices(); };
+    s.onload = () => initAutocomplete();
     document.head.appendChild(s);
-  }, [ensurePlacesServices]);
+  }, [initAutocomplete]);
 
-  const fetchPredictions = useCallback((input) => {
-    if (!input || input.length < 3) {
-      setAddressPredictions([]);
-      setShowPredictions(false);
-      return;
-    }
-    // Lazy-init: if the service isn't ready yet, try now
-    if (!autocompleteServiceRef.current) {
-      ensurePlacesServices();
-    }
-    if (!autocompleteServiceRef.current) {
-      return; // Google Maps script genuinely not loaded yet
-    }
-    autocompleteServiceRef.current.getPlacePredictions(
-      { input, types: ['address'], componentRestrictions: { country: 'us' } },
-      (predictions, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-          setAddressPredictions(predictions.slice(0, 5));
-          setShowPredictions(true);
-        } else {
-          setAddressPredictions([]);
-          setShowPredictions(false);
-        }
-      }
-    );
-  }, [ensurePlacesServices]);
-
-  const selectPrediction = useCallback((prediction) => {
-    setShowPredictions(false);
-    setAddressPredictions([]);
-    if (!placesServiceRef.current) ensurePlacesServices();
-    if (!placesServiceRef.current) {
-      if (addressInputRef.current) addressInputRef.current.value = prediction.description;
-      setForm((prev) => ({ ...prev, propertyAddress: prediction.description }));
-      return;
-    }
-    placesServiceRef.current.getDetails(
-      { placeId: prediction.place_id, fields: ['address_components', 'formatted_address'] },
-      (place, status) => {
-        if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place) {
-          if (addressInputRef.current) addressInputRef.current.value = prediction.description;
-          setForm((prev) => ({ ...prev, propertyAddress: prediction.description }));
-          return;
-        }
-        if (place.address_components) {
-          let streetNumber = '', route = '', city = '', st = '', zip = '';
-          for (const comp of place.address_components) {
-            const t = comp.types;
-            if (t.includes('street_number')) streetNumber = comp.long_name;
-            if (t.includes('route')) route = comp.long_name;
-            if (t.includes('locality')) city = comp.long_name;
-            if (t.includes('sublocality_level_1') && !city) city = comp.long_name;
-            if (t.includes('administrative_area_level_1')) st = comp.short_name;
-            if (t.includes('postal_code')) zip = comp.long_name;
-          }
-          const street = streetNumber ? `${streetNumber} ${route}` : route;
-          const displayAddress = [street, city, st].filter(Boolean).join(', ') + (zip ? ` ${zip}` : '');
-          if (addressInputRef.current) addressInputRef.current.value = displayAddress;
-          setForm((prev) => ({
-            ...prev,
-            propertyAddress: street || displayAddress || prev.propertyAddress,
-            city: city || prev.city,
-            state: st || prev.state,
-          }));
-        } else {
-          const fallback = place.formatted_address || prediction.description;
-          if (addressInputRef.current) addressInputRef.current.value = fallback;
-          setForm((prev) => ({ ...prev, propertyAddress: fallback }));
-        }
-      }
-    );
-  }, []);
-
-  const handleAddressInput = useCallback((value) => {
-    setForm((prev) => ({ ...prev, propertyAddress: value }));
-    setError('');
-    clearTimeout(predictionsDebounceRef.current);
-    predictionsDebounceRef.current = setTimeout(() => fetchPredictions(value), 250);
-  }, [fetchPredictions]);
-
-  // Close predictions on click outside
+  // Re-init autocomplete when entering step 2; clean up when leaving
   useEffect(() => {
-    const handleClick = (e) => {
-      if (addressInputRef.current && !addressInputRef.current.parentElement.contains(e.target)) {
-        setShowPredictions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  // Clean up on step change
-  useEffect(() => {
-    if (step === 2) { ensurePlacesServices(); return; }
-    setAddressPredictions([]);
-    setShowPredictions(false);
+    if (step === 2) {
+      const t = setTimeout(() => initAutocomplete(), 150);
+      return () => clearTimeout(t);
+    }
+    if (autocompleteRef.current && window.google?.maps?.event) {
+      window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
+    }
+    autocompleteRef.current = null;
     document.querySelectorAll('.pac-container').forEach((el) => el.remove());
-  }, [step, ensurePlacesServices]);
+  }, [step, initAutocomplete]);
+
+  // MutationObserver: strip pac-icon elements and force-style pac-containers
+  // Google injects these with inline styles that CSS !important can't always beat
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (!(node instanceof HTMLElement)) continue;
+          // If a pac-container was added to the body, strip its icons
+          if (node.classList.contains('pac-container')) {
+            node.querySelectorAll('.pac-icon, .pac-icon-marker, .hdpi').forEach((icon) => icon.remove());
+            // Also strip the "Powered by Google" logo
+            const logo = node.querySelector('.pac-logo');
+            if (logo) logo.style.setProperty('background-image', 'none', 'important');
+          }
+        }
+      }
+      // Catch icons inserted inside existing pac-containers
+      document.querySelectorAll('.pac-container .pac-icon, .pac-container .pac-icon-marker').forEach((icon) => icon.remove());
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
   const hasAutoTerms = !!LOAN_PROGRAMS[form.loanType];
   const isCommercial = COMMERCIAL_TERM_TYPES.includes(form.loanType);
@@ -897,18 +859,9 @@ export default function ApplyPage() {
                 <p>Tell us about the property and your financing needs.{hasAutoTerms ? ' We\u2019ll generate your loan terms instantly.' : ''}</p>
               </div>
               <div className="form-grid">
-                <div className="form-group full address-autocomplete-wrap">
+                <div className="form-group full">
                   <label>Property Address</label>
-                  <input ref={addressInputRef} type="text" id="property-address-lookup" name="property-address-lookup" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => handleAddressInput(e.target.value)} onFocus={() => { if (addressPredictions.length > 0) setShowPredictions(true); }} autoComplete="nope" role="presentation" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" />
-                  {showPredictions && addressPredictions.length > 0 && (
-                    <ul className="address-predictions">
-                      {addressPredictions.map((pred) => (
-                        <li key={pred.place_id} onMouseDown={() => selectPrediction(pred)}>
-                          {pred.description}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <input ref={addressInputRef} type="text" id="property-address-lookup" name="property-address-lookup" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="nope" role="presentation" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" />
                 </div>
                 <div className="form-group">
                   <label>Purchase Price <span className="required">*</span></label>
@@ -2488,35 +2441,37 @@ const applyStyles = `
     font-weight: 500;
   }
 
-  /* ── Nuke any leftover Google Places widget DOM ── */
-  .pac-container { display: none !important; }
-
-  /* ── Custom Address Autocomplete Dropdown ── */
-  .address-autocomplete-wrap { position: relative; }
-  .address-predictions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    margin: 4px 0 0;
-    padding: 0;
-    list-style: none;
-    background: #0d1f35;
-    border: 1px solid rgba(198,169,98,0.3);
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    z-index: 10000;
-    overflow: hidden;
+  /* ── Google Places Autocomplete Dropdown ── */
+  .pac-container {
+    background: #0d1f35 !important;
+    border: 1px solid rgba(198,169,98,0.3) !important;
+    border-radius: 8px !important;
+    font-family: 'DM Sans', sans-serif !important;
+    margin-top: 4px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+    z-index: 10000 !important;
   }
-  .address-predictions li {
-    color: rgba(255,255,255,0.7);
-    padding: 10px 14px;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1.5;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    transition: background 0.15s;
+  .pac-item {
+    color: rgba(255,255,255,0.7) !important;
+    border-top: 1px solid rgba(255,255,255,0.06) !important;
+    padding: 10px 14px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    transition: background 0.2s;
   }
-  .address-predictions li:first-child { border-top: none; }
-  .address-predictions li:hover { background: rgba(198,169,98,0.12); color: #fff; }
+  .pac-item:first-child { border-top: none !important; }
+  .pac-item:hover { background: rgba(198,169,98,0.1) !important; }
+  .pac-item-selected, .pac-item-selected:hover { background: rgba(198,169,98,0.15) !important; }
+  .pac-item-query { color: #fff !important; font-weight: 400 !important; }
+  .pac-matched { color: inherit !important; font-weight: inherit !important; }
+  /* Icons: hidden via CSS AND removed from DOM by MutationObserver */
+  .pac-icon, .pac-icon-marker, .hdpi.pac-icon, .pac-icon-search {
+    display: none !important; width: 0 !important; height: 0 !important;
+    margin: 0 !important; padding: 0 !important; background: none !important;
+    visibility: hidden !important; overflow: hidden !important;
+    position: absolute !important; pointer-events: none !important;
+  }
+  .pac-item span:last-child { color: rgba(255,255,255,0.35) !important; font-size: 12px !important; }
+  .pac-logo::after { display: none !important; }
 `;
