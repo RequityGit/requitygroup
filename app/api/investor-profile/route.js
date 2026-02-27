@@ -48,14 +48,21 @@ export async function POST(request) {
       );
     }
 
+    const smtpPort = parseInt(process.env.SMTP_PORT || '587');
     const transporter = nodemailer.createTransport({
       host: smtpHost,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: parseInt(process.env.SMTP_PORT || '587') === 465,
+      port: smtpPort,
+      secure: smtpPort === 465,
       auth: {
         user: smtpUser,
         pass: smtpPass,
       },
+      tls: {
+        rejectUnauthorized: false,
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
     });
 
     const timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
