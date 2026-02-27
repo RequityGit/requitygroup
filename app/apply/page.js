@@ -110,12 +110,6 @@ const LOAN_TYPES = [
   },
 ];
 
-const US_STATES = [
-  'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
-  'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
-  'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY',
-];
-
 const TIMELINES = [
   'Immediate — Under Contract',
   'Within 30 Days',
@@ -372,7 +366,8 @@ export default function ApplyPage() {
 
   /* ─── Google Places Autocomplete ─── */
   const initAutocomplete = useCallback(() => {
-    if (!addressInputRef.current || !window.google?.maps?.places || autocompleteRef.current) return;
+    if (!addressInputRef.current || !window.google?.maps?.places) return;
+    if (autocompleteRef.current) return;
     const ac = new window.google.maps.places.Autocomplete(addressInputRef.current, {
       types: ['address'],
       componentRestrictions: { country: 'us' },
@@ -381,7 +376,7 @@ export default function ApplyPage() {
     ac.addListener('place_changed', () => {
       const place = ac.getPlace();
       if (!place.address_components) return;
-      let streetNumber = '', route = '', city = '', st = '';
+      let streetNumber = '', route = '', city = '', st = '', zip = '';
       for (const c of place.address_components) {
         const t = c.types;
         if (t.includes('street_number')) streetNumber = c.long_name;
@@ -389,8 +384,11 @@ export default function ApplyPage() {
         if (t.includes('locality')) city = c.long_name;
         if (t.includes('sublocality_level_1') && !city) city = c.long_name;
         if (t.includes('administrative_area_level_1')) st = c.short_name;
+        if (t.includes('postal_code')) zip = c.long_name;
       }
       const street = streetNumber ? `${streetNumber} ${route}` : route;
+      const displayAddress = [street, city, st].filter(Boolean).join(', ') + (zip ? ` ${zip}` : '');
+      if (addressInputRef.current) addressInputRef.current.value = displayAddress;
       setForm((prev) => ({
         ...prev,
         propertyAddress: street || prev.propertyAddress,
@@ -403,20 +401,19 @@ export default function ApplyPage() {
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY) return;
-    if (window.google?.maps?.places) return;
+    if (window.google?.maps?.places) { initAutocomplete(); return; }
     if (document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')) return;
-    window.initGooglePlaces = () => initAutocomplete();
     const s = document.createElement('script');
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}&libraries=places&callback=initGooglePlaces`;
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}&libraries=places`;
     s.async = true;
     s.defer = true;
+    s.onload = () => initAutocomplete();
     document.head.appendChild(s);
-    return () => { delete window.initGooglePlaces; };
   }, [initAutocomplete]);
 
   useEffect(() => {
     if (step === 2) {
-      const t = setTimeout(() => initAutocomplete(), 100);
+      const t = setTimeout(() => initAutocomplete(), 150);
       return () => clearTimeout(t);
     } else {
       autocompleteRef.current = null;
@@ -646,18 +643,7 @@ export default function ApplyPage() {
               <div className="form-grid">
                 <div className="form-group full">
                   <label>Property Address</label>
-                  <input ref={addressInputRef} type="text" placeholder="Start typing an address..." value={form.propertyAddress} onChange={set('propertyAddress')} autoComplete="off" />
-                </div>
-                <div className="form-group">
-                  <label>City</label>
-                  <input type="text" placeholder="Tampa" value={form.city} onChange={set('city')} />
-                </div>
-                <div className="form-group">
-                  <label>State</label>
-                  <select value={form.state} onChange={set('state')}>
-                    <option value="">Select State</option>
-                    {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <input ref={addressInputRef} type="text" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="off" />
                 </div>
                 <div className="form-group">
                   <label>Purchase Price {hasAutoTerms && <span className="required">*</span>}</label>
