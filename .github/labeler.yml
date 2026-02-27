@@ -1,0 +1,39 @@
+# Auto-labeling rules for PRs based on file paths
+
+# Label PRs that touch API routes
+api:
+  - changed-files:
+      - any-glob-to-any-file: "app/api/**"
+
+# Label PRs that touch frontend pages
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "app/**/page.js"
+          - "app/**/layout.js"
+          - "app/globals.css"
+
+# Label PRs that touch config/infra files
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "netlify.toml"
+          - "next.config.mjs"
+          - "package.json"
+          - ".github/**"
+
+# Label PRs that touch the lending/apply flow
+lending:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "app/apply/**"
+          - "app/lending/**"
+          - "app/api/loan-request/**"
+
+# Label PRs that touch investor-related code
+investor:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "app/income-fund/**"
+          - "app/request-access/**"
+          - "app/api/investor-request/**"
