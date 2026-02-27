@@ -5,12 +5,24 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint",
+    "deploy:preview": "netlify deploy --dir=.next",
+    "deploy:prod": "netlify deploy --prod --dir=.next",
+    "netlify:status": "netlify status",
+    "netlify:open": "netlify open",
+    "prepare": "husky"
   },
   "dependencies": {
     "next": "^14.2.0",
     "nodemailer": "^6.9.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.0",
+    "husky": "^9.1.0",
+    "netlify-cli": "^17.0.0"
   }
 }

@@ -1,0 +1,9 @@
+echo "Running pre-commit checks..."
+
+# Run lint check (skips if lint script not configured yet)
+npm run lint --if-present
+
+# Run build check to catch compilation errors
+npm run build
+
+echo "Pre-commit checks passed!"
