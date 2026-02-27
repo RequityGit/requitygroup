@@ -1,4 +1,5 @@
 import { findCollectionByName, getField } from '../../lib/webflow';
+import { getLoanIndexes } from '../../lib/loan-indexes';
 import LendingClient from './LendingClient';
 
 export const metadata = {
@@ -41,6 +42,9 @@ async function getTestimonials() {
 }
 
 export default async function LendingPage() {
-  const testimonials = await getTestimonials();
-  return <LendingClient testimonials={testimonials} />;
+  const [testimonials, loanIndexes] = await Promise.all([
+    getTestimonials(),
+    getLoanIndexes(),
+  ]);
+  return <LendingClient testimonials={testimonials} loanIndexes={loanIndexes} />;
 }

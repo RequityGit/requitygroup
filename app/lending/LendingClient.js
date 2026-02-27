@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '../../components/LanguageContext';
 import { LanguageToggle } from '../../components/LanguageToggle';
+import { LoanIndexes } from '../../components/LoanIndexes';
 import translations from '../../lib/translations';
 
 const LOAN_PROGRAMS = [
@@ -119,7 +120,7 @@ const LOAN_PROGRAMS = [
   },
 ];
 
-export default function LendingClient({ testimonials = [] }) {
+export default function LendingClient({ testimonials = [], loanIndexes = null }) {
   useEffect(() => {
     const reveals = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver(
@@ -214,6 +215,8 @@ export default function LendingClient({ testimonials = [] }) {
           <div className="stat-cell"><div className="stat-num">14 Day</div><div className="stat-lbl">{t.statClose}</div></div>
           <div className="stat-cell"><div className="stat-num champagne">7</div><div className="stat-lbl">{t.statPrograms}</div></div>
         </div>
+
+        <LoanIndexes indexes={loanIndexes} />
 
         <div style={{ height: 64, background: 'var(--navy-deep)' }} />
       </div>
