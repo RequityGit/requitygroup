@@ -673,7 +673,7 @@ export default function ApplyPage() {
               <div className="form-grid">
                 <div className="form-group full">
                   <label>Property Address</label>
-                  <input ref={addressInputRef} type="text" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="new-password" />
+                  <input ref={addressInputRef} type="text" name="property-address-lookup" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="off" />
                 </div>
                 <div className="form-group">
                   <label>Purchase Price {hasAutoTerms && <span className="required">*</span>}</label>
