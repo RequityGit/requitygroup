@@ -206,6 +206,17 @@ const CITIZENSHIP_OPTIONS = [
   'Other / Not Sure',
 ];
 
+/* ─── Slider Config (per property type — all identical for now) ─── */
+const SLIDER_CONFIG = {
+  "Single Family Residence (1-4 units)": { min: 50, max: 90, default: 75 },
+  "Multifamily (5+ units)": { min: 50, max: 90, default: 75 },
+  "Mixed Use": { min: 50, max: 90, default: 75 },
+  "Commercial": { min: 50, max: 90, default: 75 },
+  "New Construction": { min: 50, max: 90, default: 75 },
+  "Land": { min: 50, max: 90, default: 75 },
+};
+const DEFAULT_SLIDER = { min: 50, max: 90, default: 75 };
+
 /* ─── Helpers ─── */
 function formatPhone(value) {
   const digits = value.replace(/\D/g, '').slice(0, 10);
@@ -351,6 +362,9 @@ export default function ApplyPage() {
     experienceLevel: '',
   });
 
+  const [sliderPercent, setSliderPercent] = useState(75);
+  const [sliderTouched, setSliderTouched] = useState(false);
+
   const set = (field) => (e) => {
     let value = e.target.value;
     if (field === 'phone') value = formatPhone(value);
@@ -450,12 +464,42 @@ export default function ApplyPage() {
   const arvLabel = LOAN_PROGRAMS[form.loanType]?.arvLabel || 'After Repair Value (ARV)';
   const stepLabels = ['Loan Type', 'Deal Details', 'Loan Terms', 'Contact Info'];
 
+  // Slider computations
+  const sliderConfig = DEFAULT_SLIDER;
+  const totalCost = parseCurrency(form.purchasePrice) + parseCurrency(form.rehabBudget);
+  const sliderLoanAmount = totalCost > 0 ? Math.round(totalCost * sliderPercent / 100) : 0;
+  const fillPercent = sliderConfig.max > sliderConfig.min
+    ? ((sliderPercent - sliderConfig.min) / (sliderConfig.max - sliderConfig.min)) * 100
+    : 0;
+  const arvNum = parseCurrency(form.afterRepairValue);
+  const ltc = totalCost > 0 ? (sliderLoanAmount / totalCost * 100) : 0;
+  const ltv = arvNum > 0 ? (sliderLoanAmount / arvNum * 100) : null;
+  const equityIn = totalCost - sliderLoanAmount;
+
+  function handleSliderChange(e) {
+    setSliderPercent(Number(e.target.value));
+    setSliderTouched(true);
+  }
+
+  // Sync slider → form.loanAmount
+  useEffect(() => {
+    const pp = parseCurrency(form.purchasePrice);
+    const rb = parseCurrency(form.rehabBudget);
+    const tc = pp + rb;
+    if (tc > 0) {
+      const amount = Math.round(tc * sliderPercent / 100);
+      setForm(prev => ({ ...prev, loanAmount: formatCurrency(String(amount)) }));
+    } else {
+      setForm(prev => ({ ...prev, loanAmount: '' }));
+    }
+  }, [form.purchasePrice, form.rehabBudget, sliderPercent]);
+
   function validateStep() {
     if (step === 1 && !form.loanType) return 'Please select a loan program.';
     if (step === 2) {
-      if (!form.loanAmount) return 'Please enter the loan amount requested.';
+      if (!form.purchasePrice) return 'Please enter the purchase price.';
+      if (!form.loanAmount) return 'Please set the loan amount.';
       if (hasAutoTerms) {
-        if (!form.purchasePrice) return 'Please enter the purchase price.';
         if (!form.afterRepairValue) return 'Please enter the after repair value.';
         if (!form.creditScore) return 'Please select your credit score range.';
         if (!form.dealsInLast24Months) return 'Please select your deal experience.';
@@ -676,23 +720,65 @@ export default function ApplyPage() {
                   <input ref={addressInputRef} type="text" name="property-address-lookup" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="off" />
                 </div>
                 <div className="form-group">
-                  <label>Purchase Price {hasAutoTerms && <span className="required">*</span>}</label>
+                  <label>Purchase Price <span className="required">*</span></label>
                   <input type="text" placeholder="$0" value={form.purchasePrice} onChange={set('purchasePrice')} />
                 </div>
-                <div className="form-group">
-                  <label>Loan Amount Requested <span className="required">*</span></label>
-                  <input type="text" placeholder="$0" value={form.loanAmount} onChange={set('loanAmount')} />
-                </div>
-                {!hasAutoTerms && (
-                  <div className="form-group">
-                    <label>{unitsLabel}</label>
-                    <input type="text" placeholder="e.g. 24" value={form.unitsOrLots} onChange={set('unitsOrLots')} />
-                  </div>
-                )}
                 {showRehab && (
                   <div className="form-group">
                     <label>{rehabLabel}</label>
                     <input type="text" placeholder="$0" value={form.rehabBudget} onChange={set('rehabBudget')} />
+                  </div>
+                )}
+              </div>
+
+              {/* Loan Amount Slider */}
+              {totalCost > 0 && (
+                <div className="slider-section">
+                  <label className="slider-label">Loan Amount Requested <span className="required">*</span></label>
+                  <div className="slider-amount">${sliderLoanAmount.toLocaleString('en-US')}</div>
+                  <div className="slider-badge">{sliderPercent}% of Total Cost</div>
+                  <div className="slider-track-wrapper">
+                    <input
+                      type="range"
+                      className="loan-slider"
+                      min={sliderConfig.min}
+                      max={sliderConfig.max}
+                      step={1}
+                      value={sliderPercent}
+                      onChange={handleSliderChange}
+                      style={{ background: `linear-gradient(to right, #c9a84c 0%, #c9a84c ${fillPercent}%, rgba(255,255,255,0.1) ${fillPercent}%, rgba(255,255,255,0.1) 100%)` }}
+                    />
+                    <div className="slider-labels">
+                      <span>{sliderConfig.min}%</span>
+                      <span>{sliderConfig.default}%</span>
+                      <span>{sliderConfig.max}%</span>
+                    </div>
+                  </div>
+                  <div className="slider-total-cost">
+                    Total project cost: ${totalCost.toLocaleString('en-US')} (Purchase + Rehab)
+                  </div>
+                  <div className="metric-pills">
+                    <div className={`metric-pill ${ltc <= 75 ? 'pill-green' : ltc <= 85 ? 'pill-gold' : 'pill-red'}`}>
+                      <div className="mp-value">{ltc.toFixed(1)}%</div>
+                      <div className="mp-label">Loan-to-Cost</div>
+                    </div>
+                    <div className={`metric-pill ${ltv === null ? '' : ltv <= 65 ? 'pill-green' : ltv <= 75 ? 'pill-gold' : 'pill-red'}`}>
+                      <div className="mp-value">{ltv !== null ? `${ltv.toFixed(1)}%` : '\u2014'}</div>
+                      <div className="mp-label">Loan-to-ARV</div>
+                    </div>
+                    <div className="metric-pill">
+                      <div className="mp-value mp-white">${equityIn.toLocaleString('en-US')}</div>
+                      <div className="mp-label">Equity In</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="form-grid">
+                {!hasAutoTerms && (
+                  <div className="form-group">
+                    <label>{unitsLabel}</label>
+                    <input type="text" placeholder="e.g. 24" value={form.unitsOrLots} onChange={set('unitsOrLots')} />
                   </div>
                 )}
                 {hasAutoTerms && (
@@ -1899,6 +1985,152 @@ const applyStyles = `
     .tm-value { font-size: 28px; }
     .ctc-features { flex-direction: column; align-items: center; }
     .progress-section { max-width: 100%; }
+    .slider-section { padding: 20px 16px; }
+    .slider-amount { font-size: 28px; }
+    .metric-pills { grid-template-columns: 1fr; }
+  }
+
+  /* ── Loan Amount Slider ── */
+  @keyframes sliderFadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .slider-section {
+    background: rgba(201, 168, 76, 0.06);
+    border: 1px solid rgba(201, 168, 76, 0.2);
+    padding: 28px 24px;
+    margin: 20px 0;
+    animation: sliderFadeIn 0.4s ease forwards;
+    transition: all 0.3s ease;
+  }
+  .slider-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .slider-amount {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 44px);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .slider-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(201, 168, 76, 0.15);
+    border: 1px solid rgba(201, 168, 76, 0.3);
+    color: #c9a84c;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+  }
+  .slider-track-wrapper {
+    padding: 0 2px;
+  }
+  .loan-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .loan-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #c9a84c;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(201, 168, 76, 0.4), 0 2px 6px rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,255,255,0.2);
+    transition: box-shadow 0.3s, transform 0.15s;
+  }
+  .loan-slider::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 20px rgba(201, 168, 76, 0.6), 0 2px 8px rgba(0,0,0,0.4);
+    transform: scale(1.1);
+  }
+  .loan-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #c9a84c;
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.2);
+    box-shadow: 0 0 12px rgba(201, 168, 76, 0.4), 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .loan-slider::-moz-range-track {
+    height: 6px;
+    border-radius: 3px;
+    background: transparent;
+  }
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+  .slider-labels span {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 500;
+  }
+  .slider-total-cost {
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 16px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Metric Pills ── */
+  .metric-pills {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .metric-pill {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 16px 12px;
+    text-align: center;
+    transition: all 0.4s ease;
+  }
+  .metric-pill.pill-green {
+    border-color: rgba(74, 222, 128, 0.3);
+    background: rgba(74, 222, 128, 0.06);
+  }
+  .metric-pill.pill-gold {
+    border-color: rgba(201, 168, 76, 0.3);
+    background: rgba(201, 168, 76, 0.06);
+  }
+  .metric-pill.pill-red {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.06);
+  }
+  .mp-value {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    transition: color 0.4s ease;
+  }
+  .pill-green .mp-value { color: #4ade80; }
+  .pill-gold .mp-value { color: #c9a84c; }
+  .pill-red .mp-value { color: #ef4444; }
+  .mp-value.mp-white { color: #fff; }
+  .mp-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
   }
 
   /* ── Google Places Autocomplete Dropdown ── */
