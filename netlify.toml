@@ -4,3 +4,6 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Google Places API key is a NEXT_PUBLIC_ var — intentionally embedded in client JS
+  # and restricted by HTTP referrer on Google's side, not by secrecy
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
