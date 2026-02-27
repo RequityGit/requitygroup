@@ -402,6 +402,10 @@ export default function ApplyPage() {
   };
 
   const selectCategory = (cat) => {
+    if (loanCategory === cat) {
+      setLoanCategory(null);
+      return;
+    }
     setLoanCategory(cat);
     const validIds = cat === 'residential' ? RESIDENTIAL_IDS : COMMERCIAL_IDS;
     if (form.loanType && !validIds.includes(form.loanType)) {
@@ -409,15 +413,13 @@ export default function ApplyPage() {
     }
   };
 
-  const selectLoanType = (id) => {
-    if (form.loanType === id) {
-      setDirection(1);
-      setStep((s) => Math.min(s + 1, totalSteps));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-    setForm((prev) => ({ ...prev, loanType: id }));
+  const selectSubOption = (categoryKey, loanTypeId) => {
+    setLoanCategory(categoryKey);
+    setForm((prev) => ({ ...prev, loanType: loanTypeId }));
     setError('');
+    setDirection(1);
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   /* ─── Google Places Autocomplete ─── */
@@ -744,11 +746,12 @@ export default function ApplyPage() {
             <div className="step-content">
               <div className="step-header">
                 <h1>Select Your Loan Program</h1>
-                <p>{loanCategory ? 'Choose the financing product that best matches your deal.' : 'Start by choosing a property type.'}</p>
+                <p>Start by choosing a property type.</p>
               </div>
 
-              {/* Category Selector */}
-              <div className="loan-category-selector">
+              {/* Category Accordion */}
+              <div className="loan-category-accordion">
+                {/* Residential */}
                 <button
                   type="button"
                   className={`loan-category-card ${loanCategory === 'residential' ? 'selected' : ''}`}
@@ -762,14 +765,37 @@ export default function ApplyPage() {
                       <rect x="27" y="22" width="5" height="5" />
                     </svg>
                   </div>
-                  <div className="lc-label">Residential</div>
-                  <div className="lc-desc">Single-family, fix &amp; flip, rental properties, and new construction.</div>
-                  {loanCategory === 'residential' && (
-                    <div className="lt-check">
-                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l4 4 6-6" /></svg>
-                    </div>
-                  )}
+                  <div className="lc-text">
+                    <div className="lc-label">Residential</div>
+                    <div className="lc-desc">Single-family, fix &amp; flip, rental properties, and new construction.</div>
+                  </div>
+                  <svg className={`lc-chevron ${loanCategory === 'residential' ? 'open' : ''}`} width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 8l4 4 4-4" />
+                  </svg>
                 </button>
+                <div className={`loan-suboptions ${loanCategory === 'residential' ? 'expanded' : ''}`}>
+                  <div className="loan-suboptions-inner">
+                    {RESIDENTIAL_TYPES.map((lt) => (
+                      <button
+                        key={lt.id}
+                        type="button"
+                        className="loan-suboption"
+                        onClick={() => selectSubOption('residential', lt.id)}
+                      >
+                        <div className="lso-icon">{lt.icon}</div>
+                        <div className="lso-info">
+                          <div className="lso-label">{lt.label}</div>
+                          <div className="lso-desc">{lt.desc}</div>
+                        </div>
+                        <svg className="lso-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M7 4l6 6-6 6" />
+                        </svg>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Commercial */}
                 <button
                   type="button"
                   className={`loan-category-card ${loanCategory === 'commercial' ? 'selected' : ''}`}
@@ -786,38 +812,36 @@ export default function ApplyPage() {
                       <path d="M14 12V6h20v6" />
                     </svg>
                   </div>
-                  <div className="lc-label">Commercial</div>
-                  <div className="lc-desc">Multifamily, CRE bridge, manufactured housing, and RV parks.</div>
-                  {loanCategory === 'commercial' && (
-                    <div className="lt-check">
-                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l4 4 6-6" /></svg>
-                    </div>
-                  )}
+                  <div className="lc-text">
+                    <div className="lc-label">Commercial</div>
+                    <div className="lc-desc">Multifamily, CRE bridge, manufactured housing, and RV parks.</div>
+                  </div>
+                  <svg className={`lc-chevron ${loanCategory === 'commercial' ? 'open' : ''}`} width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 8l4 4 4-4" />
+                  </svg>
                 </button>
-              </div>
-
-              {/* Loan Type Grid — shown after category is selected */}
-              {loanCategory && (
-                <div className="loan-type-grid" key={loanCategory}>
-                  {(loanCategory === 'residential' ? RESIDENTIAL_TYPES : COMMERCIAL_TYPES).map((lt) => (
-                    <button
-                      key={lt.id}
-                      type="button"
-                      className={`loan-type-card ${form.loanType === lt.id ? 'selected' : ''}`}
-                      onClick={() => selectLoanType(lt.id)}
-                    >
-                      <div className="lt-icon">{lt.icon}</div>
-                      <div className="lt-label">{lt.label}</div>
-                      <div className="lt-desc">{lt.desc}</div>
-                      {form.loanType === lt.id && (
-                        <div className="lt-check">
-                          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l4 4 6-6" /></svg>
+                <div className={`loan-suboptions ${loanCategory === 'commercial' ? 'expanded' : ''}`}>
+                  <div className="loan-suboptions-inner">
+                    {COMMERCIAL_TYPES.map((lt) => (
+                      <button
+                        key={lt.id}
+                        type="button"
+                        className="loan-suboption"
+                        onClick={() => selectSubOption('commercial', lt.id)}
+                      >
+                        <div className="lso-icon">{lt.icon}</div>
+                        <div className="lso-info">
+                          <div className="lso-label">{lt.label}</div>
+                          <div className="lso-desc">{lt.desc}</div>
                         </div>
-                      )}
-                    </button>
-                  ))}
+                        <svg className="lso-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M7 4l6 6-6 6" />
+                        </svg>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           )}
 
@@ -1293,7 +1317,7 @@ export default function ApplyPage() {
               Home
             </Link>
           )}
-          {step < totalSteps ? (
+          {step === 1 ? null : step < totalSteps ? (
             <button type="button" className="btn-next" onClick={goNext}>
               {step === 3 && generatedTerms ? 'Get My Term Sheet' : 'Continue'}
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -1530,18 +1554,20 @@ const applyStyles = `
     line-height: 1.5;
   }
 
-  /* ── Loan Category Selector ── */
-  .loan-category-selector {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 32px;
+  /* ── Loan Category Accordion ── */
+  .loan-category-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
   .loan-category-card {
-    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
     background: rgba(255,255,255,0.025);
     border: 1px solid rgba(255,255,255,0.08);
-    padding: 36px 28px;
+    padding: 32px 28px;
     cursor: pointer;
     transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     text-align: left;
@@ -1549,31 +1575,32 @@ const applyStyles = `
     font-family: inherit;
     border-radius: 0;
     outline: none;
+    margin-bottom: -1px;
   }
   .loan-category-card:hover {
     border-color: rgba(232, 98, 44, 0.3);
     background: rgba(232, 98, 44, 0.04);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   }
   .loan-category-card.selected {
     border-color: var(--champagne);
     background: rgba(232, 98, 44, 0.08);
-    box-shadow: 0 0 0 1px var(--champagne), 0 8px 32px rgba(232, 98, 44, 0.15);
+    box-shadow: 0 0 0 1px var(--champagne);
+    z-index: 1;
   }
   .lc-icon {
     width: 48px;
     height: 48px;
-    margin-bottom: 18px;
+    flex-shrink: 0;
     color: rgba(255,255,255,0.35);
     transition: color 0.3s;
   }
   .loan-category-card:hover .lc-icon,
   .loan-category-card.selected .lc-icon { color: var(--champagne); }
+  .lc-text { flex: 1; }
   .lc-label {
     font-size: 20px;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     letter-spacing: 0.2px;
   }
   .lc-desc {
@@ -1582,87 +1609,91 @@ const applyStyles = `
     line-height: 1.55;
     font-weight: 400;
   }
-  @media (max-width: 600px) {
-    .loan-category-selector {
-      grid-template-columns: 1fr;
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-    .loan-category-card {
-      padding: 28px 22px;
-    }
+  .lc-chevron {
+    flex-shrink: 0;
+    color: rgba(255,255,255,0.3);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s;
+  }
+  .lc-chevron.open {
+    transform: rotate(180deg);
+    color: var(--champagne);
   }
 
-  /* ── Loan Type Grid ── */
-  .loan-type-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  /* ── Sub-options Accordion ── */
+  .loan-suboptions {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .loan-suboptions.expanded {
+    max-height: 600px;
+  }
+  .loan-suboptions-inner {
+    padding: 4px 0;
+  }
+  .loan-suboption {
+    display: flex;
+    align-items: center;
     gap: 16px;
-    animation: fadeSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  @keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .loan-type-card {
-    position: relative;
-    background: rgba(255,255,255,0.025);
-    border: 1px solid rgba(255,255,255,0.08);
-    padding: 28px 24px;
+    width: 100%;
+    background: rgba(255,255,255,0.015);
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 20px 28px 20px 44px;
     cursor: pointer;
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     text-align: left;
     color: #fff;
     font-family: inherit;
-    border-radius: 0;
     outline: none;
   }
-  .loan-type-card:hover {
-    border-color: rgba(232, 98, 44, 0.3);
-    background: rgba(232, 98, 44, 0.04);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  .loan-suboption:last-child { border-bottom: none; }
+  .loan-suboption:hover {
+    background: rgba(232, 98, 44, 0.06);
+    padding-left: 48px;
   }
-  .loan-type-card.selected {
-    border-color: var(--champagne);
-    background: rgba(232, 98, 44, 0.08);
-    box-shadow: 0 0 0 1px var(--champagne), 0 8px 32px rgba(232, 98, 44, 0.15);
-  }
-  .lt-icon {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 16px;
-    color: rgba(255,255,255,0.35);
+  .lso-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    color: rgba(255,255,255,0.3);
     transition: color 0.3s;
   }
-  .loan-type-card:hover .lt-icon,
-  .loan-type-card.selected .lt-icon { color: var(--champagne); }
-  .lt-label {
+  .loan-suboption:hover .lso-icon { color: var(--champagne); }
+  .lso-info { flex: 1; min-width: 0; }
+  .lso-label {
     font-size: 16px;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 3px;
     letter-spacing: 0.2px;
   }
-  .lt-desc {
+  .lso-desc {
     font-size: 13px;
-    color: rgba(255,255,255,0.4);
-    line-height: 1.55;
-    font-weight: 400;
+    color: rgba(255,255,255,0.35);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .lt-check {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--champagne);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  .lso-arrow {
+    flex-shrink: 0;
+    color: rgba(255,255,255,0.15);
+    transition: all 0.25s;
   }
-  .lt-check svg { width: 12px; height: 12px; color: #fff; }
+  .loan-suboption:hover .lso-arrow {
+    color: var(--champagne);
+    transform: translateX(3px);
+  }
+  @media (max-width: 600px) {
+    .loan-category-card { padding: 24px 20px; gap: 16px; }
+    .lc-icon { width: 40px; height: 40px; }
+    .lc-label { font-size: 18px; }
+    .lc-desc { font-size: 13px; }
+    .loan-suboption { padding: 16px 20px 16px 32px; }
+    .loan-suboption:hover { padding-left: 36px; }
+    .lso-desc { white-space: normal; }
+  }
+
   @keyframes popIn {
     from { transform: scale(0); }
     to { transform: scale(1); }
