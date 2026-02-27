@@ -717,7 +717,7 @@ export default function ApplyPage() {
               <div className="form-grid">
                 <div className="form-group full">
                   <label>Property Address</label>
-                  <input ref={addressInputRef} type="text" name="property-address-lookup" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="off" />
+                  <input ref={addressInputRef} type="search" name="property-address-lookup" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="off" data-lpignore="true" data-1p-ignore data-form-type="other" />
                 </div>
                 <div className="form-group">
                   <label>Purchase Price <span className="required">*</span></label>
@@ -1467,6 +1467,17 @@ const applyStyles = `
   }
   .required { color: var(--champagne); }
   .optional { color: rgba(255,255,255,0.3); font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .form-group input[type="search"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  .form-group input[type="search"]::-webkit-search-decoration,
+  .form-group input[type="search"]::-webkit-search-cancel-button,
+  .form-group input[type="search"]::-webkit-search-results-button,
+  .form-group input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+  }
   .form-group input,
   .form-group select,
   .form-group textarea {
