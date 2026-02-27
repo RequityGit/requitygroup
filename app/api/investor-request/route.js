@@ -9,12 +9,9 @@ export async function POST(request) {
       lastName,
       email,
       phone,
-      accreditedStatus,
-      investmentAmount,
-      referralSource,
     } = data;
 
-    if (!firstName || !lastName || !email || !phone || !accreditedStatus || !investmentAmount) {
+    if (!firstName || !lastName || !email || !phone) {
       return Response.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -61,8 +58,8 @@ export async function POST(request) {
       from: `"Requity Group" <${process.env.SMTP_USER}>`,
       to: notifyEmail,
       replyTo: email,
-      subject: `New Investor Request: ${firstName} ${lastName} — ${investmentAmount}`,
-      html: buildInternalEmail({ firstName, lastName, email, phone, accreditedStatus, investmentAmount, referralSource, timestamp }),
+      subject: `New Investor Request: ${firstName} ${lastName}`,
+      html: buildInternalEmail({ firstName, lastName, email, phone, timestamp }),
     });
 
     // ─── Investor Confirmation Email ───
@@ -105,13 +102,6 @@ function buildInternalEmail(d) {
       </p>
     </div>
 
-    <!-- Investment Badge -->
-    <div style="padding:32px 40px 0;">
-      <div style="display:inline-block;padding:10px 24px;background-color:rgba(198,169,98,0.15);border:1px solid rgba(198,169,98,0.3);border-radius:4px;">
-        <span style="font-size:14px;font-weight:600;color:#C6A962;letter-spacing:1px;text-transform:uppercase;">${d.investmentAmount}</span>
-      </div>
-    </div>
-
     <!-- Contact Information -->
     <div style="padding:32px 40px;">
       <h2 style="margin:0 0 20px;font-size:16px;color:#C6A962;letter-spacing:2px;text-transform:uppercase;font-weight:500;">
@@ -145,39 +135,13 @@ function buildInternalEmail(d) {
       </table>
     </div>
 
-    <!-- Investor Details -->
+    <!-- Note -->
     <div style="padding:0 40px 32px;">
-      <h2 style="margin:0 0 20px;font-size:16px;color:#C6A962;letter-spacing:2px;text-transform:uppercase;font-weight:500;">
-        Investor Details
-      </h2>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr>
-          <td style="padding:12px 16px;background:rgba(198,169,98,0.08);border:1px solid rgba(198,169,98,0.2);width:40%;">
-            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">Accredited Status</span>
-          </td>
-          <td style="padding:12px 16px;background:rgba(198,169,98,0.08);border:1px solid rgba(198,169,98,0.2);">
-            <span style="font-size:15px;color:#C6A962;font-weight:700;">${d.accreditedStatus}</span>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:12px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">Investment Amount</span>
-          </td>
-          <td style="padding:12px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:15px;color:#ffffff;font-weight:600;">${d.investmentAmount}</span>
-          </td>
-        </tr>
-        ${d.referralSource ? `
-        <tr>
-          <td style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">Referral Source</span>
-          </td>
-          <td style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:15px;color:#ffffff;">${d.referralSource}</span>
-          </td>
-        </tr>
-        ` : ''}
-      </table>
+      <div style="padding:16px;background:rgba(198,169,98,0.06);border:1px solid rgba(198,169,98,0.15);">
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">
+          This investor has been prompted to complete their investor profile. You will receive a follow-up email if they submit additional details.
+        </p>
+      </div>
     </div>
 
     <!-- Footer -->
