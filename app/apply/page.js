@@ -474,7 +474,12 @@ export default function ApplyPage() {
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY) return;
     if (window.google?.maps?.places) { initAutocomplete(); return; }
-    if (document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')) return;
+    const existing = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]');
+    if (existing) {
+      // Script tag exists but hasn't loaded yet — attach a listener
+      existing.addEventListener('load', () => initAutocomplete(), { once: true });
+      return;
+    }
     const s = document.createElement('script');
     s.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}&libraries=places`;
     s.async = true;
@@ -487,13 +492,13 @@ export default function ApplyPage() {
     if (step === 2) {
       const t = setTimeout(() => initAutocomplete(), 150);
       return () => clearTimeout(t);
-    } else {
-      // Clean up old autocomplete instance
-      if (autocompleteRef.current && window.google?.maps?.event) {
-        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
-      }
-      autocompleteRef.current = null;
     }
+    // Clean up autocomplete instance and orphaned pac-containers when leaving step 2
+    if (autocompleteRef.current && window.google?.maps?.event) {
+      window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
+    }
+    autocompleteRef.current = null;
+    document.querySelectorAll('.pac-container').forEach((el) => el.remove());
   }, [step, initAutocomplete]);
 
   const hasAutoTerms = !!LOAN_PROGRAMS[form.loanType];
@@ -836,7 +841,7 @@ export default function ApplyPage() {
               <div className="form-grid">
                 <div className="form-group full">
                   <label>Property Address</label>
-                  <input ref={addressInputRef} type="search" name="property-address-lookup" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="off" data-lpignore="true" data-1p-ignore data-form-type="other" />
+                  <input ref={addressInputRef} type="text" id="property-address-lookup" name="property-address-lookup" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => { setForm((prev) => ({ ...prev, propertyAddress: e.target.value })); setError(''); }} autoComplete="one-time-code" data-lpignore="true" data-1p-ignore data-form-type="other" />
                 </div>
                 <div className="form-group">
                   <label>Purchase Price <span className="required">*</span></label>
@@ -1678,16 +1683,10 @@ const applyStyles = `
   }
   .required { color: var(--champagne); }
   .optional { color: rgba(255,255,255,0.3); font-weight: 400; text-transform: none; letter-spacing: 0; }
-  .form-group input[type="search"] {
+  .form-group input[type="text"]#property-address-lookup {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-  }
-  .form-group input[type="search"]::-webkit-search-decoration,
-  .form-group input[type="search"]::-webkit-search-cancel-button,
-  .form-group input[type="search"]::-webkit-search-results-button,
-  .form-group input[type="search"]::-webkit-search-results-decoration {
-    -webkit-appearance: none;
   }
   .form-group input,
   .form-group select,
@@ -2424,29 +2423,29 @@ const applyStyles = `
 
   /* ── Google Places Autocomplete Dropdown ── */
   .pac-container {
-    background: #0d1f35;
-    border: 1px solid rgba(198,169,98,0.3);
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    margin-top: 4px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    z-index: 10000;
+    background: #0d1f35 !important;
+    border: 1px solid rgba(198,169,98,0.3) !important;
+    border-radius: 8px !important;
+    font-family: 'DM Sans', sans-serif !important;
+    margin-top: 4px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+    z-index: 10000 !important;
   }
   .pac-item {
-    color: rgba(255,255,255,0.7);
-    border-top: 1px solid rgba(255,255,255,0.06);
-    padding: 10px 14px;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1.5;
+    color: rgba(255,255,255,0.7) !important;
+    border-top: 1px solid rgba(255,255,255,0.06) !important;
+    padding: 10px 14px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
     transition: background 0.2s;
   }
-  .pac-item:first-child { border-top: none; }
-  .pac-item:hover { background: rgba(198,169,98,0.1); }
-  .pac-item-selected, .pac-item-selected:hover { background: rgba(198,169,98,0.15); }
-  .pac-item-query { color: #fff; font-weight: 400; }
-  .pac-matched { color: inherit; font-weight: inherit; }
-  .pac-icon { display: none; }
-  .pac-item span:last-child { color: rgba(255,255,255,0.35); font-size: 12px; }
-  .pac-logo::after { margin: 4px 12px; }
+  .pac-item:first-child { border-top: none !important; }
+  .pac-item:hover { background: rgba(198,169,98,0.1) !important; }
+  .pac-item-selected, .pac-item-selected:hover { background: rgba(198,169,98,0.15) !important; }
+  .pac-item-query { color: #fff !important; font-weight: 400 !important; }
+  .pac-matched { color: inherit !important; font-weight: inherit !important; }
+  .pac-icon, .pac-icon-marker, .hdpi.pac-icon { display: none !important; width: 0 !important; margin: 0 !important; padding: 0 !important; }
+  .pac-item span:last-child { color: rgba(255,255,255,0.35) !important; font-size: 12px !important; }
+  .pac-logo::after { margin: 4px 12px !important; }
 `;
