@@ -14,13 +14,10 @@ export async function POST(request) {
       unitsOrLots,
       rehabBudget,
       afterRepairValue,
-      exitStrategy,
       timeline,
-      additionalNotes,
       creditScore,
       dealsInLast24Months,
       citizenshipStatus,
-      hasEntity,
       firstName,
       lastName,
       email,
@@ -64,9 +61,9 @@ export async function POST(request) {
     // ─── Internal Notification Email ───
     const internalHtml = buildInternalEmail({
       loanType, propertyAddress, city, state, purchasePrice, loanAmount,
-      unitsOrLots, rehabBudget, afterRepairValue, exitStrategy, timeline,
-      additionalNotes, creditScore, dealsInLast24Months, citizenshipStatus,
-      hasEntity, firstName, lastName, email, phone, company, experienceLevel,
+      unitsOrLots, rehabBudget, afterRepairValue, timeline,
+      creditScore, dealsInLast24Months, citizenshipStatus,
+      firstName, lastName, email, phone, company, experienceLevel,
       generatedTerms, unitsLabel, showRehab, rehabLabel, timestamp,
     });
 
@@ -207,16 +204,6 @@ function buildInternalEmail(d) {
             <span style="font-size:15px;color:#ffffff;">${d.citizenshipStatus}</span>
           </td>
         </tr>
-        ${d.hasEntity ? `
-        <tr>
-          <td style="padding:12px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">Entity</span>
-          </td>
-          <td style="padding:12px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:15px;color:#ffffff;">${d.hasEntity}</span>
-          </td>
-        </tr>
-        ` : ''}
       </table>
     </div>
   ` : '';
@@ -379,16 +366,6 @@ function buildInternalEmail(d) {
           </td>
         </tr>
         ` : ''}
-        ${d.exitStrategy ? `
-        <tr>
-          <td style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;">Exit Strategy</span>
-          </td>
-          <td style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:15px;color:#ffffff;">${d.exitStrategy}</span>
-          </td>
-        </tr>
-        ` : ''}
         ${d.timeline ? `
         <tr>
           <td style="padding:12px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
@@ -401,18 +378,6 @@ function buildInternalEmail(d) {
         ` : ''}
       </table>
     </div>
-
-    ${d.additionalNotes ? `
-    <!-- Additional Notes -->
-    <div style="padding:0 40px 32px;">
-      <h2 style="margin:0 0 16px;font-size:16px;color:#E8622C;letter-spacing:2px;text-transform:uppercase;font-weight:500;">
-        Additional Notes
-      </h2>
-      <div style="padding:20px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-left:3px solid #E8622C;">
-        <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.7);line-height:1.7;">${d.additionalNotes}</p>
-      </div>
-    </div>
-    ` : ''}
 
     <!-- Footer -->
     <div style="padding:24px 40px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
