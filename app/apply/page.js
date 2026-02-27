@@ -1899,8 +1899,8 @@ const applyStyles = `
   .pac-item:first-child { border-top: none; }
   .pac-item:hover { background: rgba(198,169,98,0.1); }
   .pac-item-selected, .pac-item-selected:hover { background: rgba(198,169,98,0.15); }
-  .pac-item-query { color: #fff; font-weight: 500; }
-  .pac-matched { color: #C6A962; font-weight: 600; }
+  .pac-item-query { color: #fff; font-weight: 400; }
+  .pac-matched { color: inherit; font-weight: inherit; }
   .pac-icon { display: none; }
   .pac-item span:last-child { color: rgba(255,255,255,0.35); font-size: 12px; }
   .pac-logo::after { margin: 4px 12px; }
