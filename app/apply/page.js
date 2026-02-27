@@ -138,8 +138,8 @@ const EXPERIENCE_LEVELS = [
 /* ─── Loan Program Pricing (synced from Google Sheets → data/pricing-config.json) ─── */
 const LOAN_PROGRAMS = pricingConfig.loanPrograms;
 
-const COMMERCIAL_TYPES = ['CRE Bridge', 'RV Park', 'Multifamily'];
-const RESIDENTIAL_TYPES = ['Fix & Flip', 'DSCR Rental', 'Manufactured Housing', 'New Construction'];
+const COMMERCIAL_TERM_TYPES = ['CRE Bridge', 'RV Park', 'Multifamily'];
+const RESIDENTIAL_TERM_TYPES = ['Fix & Flip', 'DSCR Rental', 'Manufactured Housing', 'New Construction'];
 const TERM_OPTIONS = [
   { months: 12, exitPoints: 0, label: '12 Months', exitLabel: '0 exit points' },
   { months: 18, exitPoints: 1, label: '18 Months', exitLabel: '1 exit point' },
@@ -355,10 +355,48 @@ export default function ApplyPage() {
   const [sliderPercent, setSliderPercent] = useState(75);
   const [sliderTouched, setSliderTouched] = useState(false);
 
+  // Track raw thousands input (what user actually typed) for currency fields
+  const [thousandsRaw, setThousandsRaw] = useState({
+    purchasePrice: '',
+    rehabBudget: '',
+    afterRepairValue: '',
+  });
+
+  const THOUSANDS_FIELDS = ['purchasePrice', 'rehabBudget', 'afterRepairValue'];
+
+  const handleThousandsKeyDown = (field) => (e) => {
+    const raw = thousandsRaw[field] || '';
+    if (e.key >= '0' && e.key <= '9') {
+      e.preventDefault();
+      const newRaw = raw + e.key;
+      const cleaned = String(parseInt(newRaw));
+      setThousandsRaw(prev => ({ ...prev, [field]: cleaned }));
+      setForm(prev => ({ ...prev, [field]: formatCurrency(String(parseInt(cleaned) * 1000)) }));
+      setError('');
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+      e.preventDefault();
+      const newRaw = raw.slice(0, -1);
+      setThousandsRaw(prev => ({ ...prev, [field]: newRaw }));
+      setForm(prev => ({ ...prev, [field]: newRaw ? formatCurrency(String(parseInt(newRaw) * 1000)) : '' }));
+      setError('');
+    }
+  };
+
+  const handleThousandsPaste = (field) => (e) => {
+    e.preventDefault();
+    const digits = e.clipboardData.getData('text').replace(/\D/g, '');
+    if (digits) {
+      const cleaned = String(parseInt(digits));
+      setThousandsRaw(prev => ({ ...prev, [field]: cleaned }));
+      setForm(prev => ({ ...prev, [field]: formatCurrency(String(parseInt(cleaned) * 1000)) }));
+      setError('');
+    }
+  };
+
   const set = (field) => (e) => {
     let value = e.target.value;
     if (field === 'phone') value = formatPhone(value);
-    if (['purchasePrice', 'loanAmount', 'rehabBudget', 'afterRepairValue'].includes(field)) value = formatCurrency(value);
+    if (field === 'loanAmount') value = formatCurrency(value);
     setForm((prev) => ({ ...prev, [field]: value }));
     setError('');
   };
@@ -455,7 +493,7 @@ export default function ApplyPage() {
   }, [step, initAutocomplete]);
 
   const hasAutoTerms = !!LOAN_PROGRAMS[form.loanType];
-  const isCommercial = COMMERCIAL_TYPES.includes(form.loanType);
+  const isCommercial = COMMERCIAL_TERM_TYPES.includes(form.loanType);
   const totalSteps = 4;
 
   // For commercial types, find the program row matching the selected term
@@ -551,7 +589,7 @@ export default function ApplyPage() {
     // Calculate terms when moving to step 3
     if (step === 2 && hasAutoTerms) {
       let program;
-      if (COMMERCIAL_TYPES.includes(form.loanType)) {
+      if (COMMERCIAL_TERM_TYPES.includes(form.loanType)) {
         program = findProgramForTerm(form, selectedTermMonths);
       } else {
         program = qualifyForProgram(form);
@@ -797,12 +835,14 @@ export default function ApplyPage() {
                 </div>
                 <div className="form-group">
                   <label>Purchase Price <span className="required">*</span></label>
-                  <input type="text" placeholder="$0" value={form.purchasePrice} onChange={set('purchasePrice')} />
+                  <input type="text" placeholder="$0" value={form.purchasePrice} onKeyDown={handleThousandsKeyDown('purchasePrice')} onPaste={handleThousandsPaste('purchasePrice')} onChange={() => {}} />
+                  <span className="field-hint">Enter in thousands</span>
                 </div>
                 {showRehab && (
                   <div className="form-group">
                     <label>{rehabLabel}</label>
-                    <input type="text" placeholder="$0" value={form.rehabBudget} onChange={set('rehabBudget')} />
+                    <input type="text" placeholder="$0" value={form.rehabBudget} onKeyDown={handleThousandsKeyDown('rehabBudget')} onPaste={handleThousandsPaste('rehabBudget')} onChange={() => {}} />
+                    <span className="field-hint">Enter in thousands</span>
                   </div>
                 )}
               </div>
@@ -860,7 +900,8 @@ export default function ApplyPage() {
                 {hasAutoTerms && (
                   <div className="form-group">
                     <label>{arvLabel} <span className="required">*</span></label>
-                    <input type="text" placeholder="$0" value={form.afterRepairValue} onChange={set('afterRepairValue')} />
+                    <input type="text" placeholder="$0" value={form.afterRepairValue} onKeyDown={handleThousandsKeyDown('afterRepairValue')} onPaste={handleThousandsPaste('afterRepairValue')} onChange={() => {}} />
+                    <span className="field-hint">Enter in thousands</span>
                   </div>
                 )}
                 <div className="form-group">
@@ -1680,6 +1721,13 @@ const applyStyles = `
   .form-group textarea { resize: vertical; min-height: 100px; }
   .form-group input::placeholder,
   .form-group textarea::placeholder { color: rgba(255,255,255,0.2); }
+  .field-hint {
+    display: block;
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    margin-top: 6px;
+    letter-spacing: 0.3px;
+  }
   .form-group input:focus,
   .form-group select:focus,
   .form-group textarea:focus {
