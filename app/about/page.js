@@ -43,9 +43,8 @@ export default function AboutPage() {
           <nav className="scrolled">
             <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
             <ul className="nav-links" id="navLinks">
-              <li><Link href="/income-fund">Income Fund</Link></li>
-              <li><Link href="/lending">Lending</Link></li>
-              <li><Link href="/portfolio">Portfolio</Link></li>
+              <li><Link href="/invest">Invest</Link></li>
+              <li><Link href="/lending">Borrow</Link></li>
               <li><Link href="/about" style={{ color: 'var(--champagne)' }}>About</Link></li>
               <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login &rarr;</a></li>
             </ul>
