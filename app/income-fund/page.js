@@ -390,7 +390,7 @@ const fundPageStyles = `
   .if-hero-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 80px;
+    gap: clamp(40px, 6vw, 80px);
     align-items: center;
     width: 100%;
   }
@@ -426,8 +426,15 @@ const fundPageStyles = `
   }
   @media (max-width: 968px) {
     .if-hero-body { padding: 100px 24px 60px; }
-    .if-hero-grid { grid-template-columns: 1fr; gap: 48px; }
+    .if-hero-grid { grid-template-columns: 1fr; gap: 40px; }
     .if-hero-actions { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 600px) {
+    .if-hero-body { padding: 80px 20px 48px; }
+    .if-hero-desc { font-size: 15px; }
+    .if-hero-actions { width: 100%; }
+    .if-hero-actions .btn-primary,
+    .if-hero-actions .btn-secondary { width: 100%; justify-content: center; }
   }
 
   /* Hero Fund Card */
@@ -435,7 +442,7 @@ const fundPageStyles = `
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
-    padding: 44px;
+    padding: clamp(24px, 4vw, 44px);
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(12px);
@@ -541,6 +548,9 @@ const fundPageStyles = `
   }
   @media (max-width: 968px) {
     .if-benefits-header { grid-template-columns: 1fr; gap: 20px; }
+    .if-benefits-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
     .if-benefits-grid { grid-template-columns: 1fr; }
   }
 
@@ -685,7 +695,9 @@ const fundPageStyles = `
     display: grid; grid-template-columns: 1fr 1fr;
     gap: 20px;
   }
-  @media (max-width: 900px) { .if-testimonials-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) {
+    .if-testimonials-grid { grid-template-columns: 1fr; }
+  }
 
   /* ── CTA Banner (light zone, dark card) ── */
   .if-cta {
@@ -693,7 +705,7 @@ const fundPageStyles = `
   }
   .if-cta-banner {
     background: linear-gradient(135deg, var(--navy-deep), var(--navy));
-    border-radius: 18px; padding: 64px;
+    border-radius: 18px; padding: clamp(36px, 6vw, 64px);
     text-align: center;
     position: relative; overflow: hidden;
   }
@@ -737,6 +749,9 @@ const fundPageStyles = `
     line-height: 1.7;
     max-width: 800px;
     opacity: 0.6;
+  }
+  @media (max-width: 600px) {
+    .if-cta-banner { border-radius: 14px; }
   }
 
   /* Footer spacing */

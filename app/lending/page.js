@@ -413,7 +413,7 @@ const lendingStyles = `
   .ld-hero-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 80px;
+    gap: clamp(40px, 6vw, 80px);
     align-items: center;
     padding: 140px 0 80px;
   }
@@ -444,8 +444,15 @@ const lendingStyles = `
     align-items: center;
   }
   @media (max-width: 968px) {
-    .ld-hero-grid { grid-template-columns: 1fr; gap: 48px; padding: 120px 0 60px; }
+    .ld-hero-grid { grid-template-columns: 1fr; gap: 40px; padding: 120px 0 60px; }
     .ld-hero-actions { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 600px) {
+    .ld-hero-grid { padding: 100px 0 48px; }
+    .ld-hero-desc { font-size: 15px; }
+    .ld-hero-actions { width: 100%; }
+    .ld-hero-actions .btn-primary,
+    .ld-hero-actions .btn-secondary { width: 100%; justify-content: center; }
   }
 
   /* ── Hero Stats Card ── */
@@ -566,7 +573,7 @@ const lendingStyles = `
     transition: gap 0.3s, color 0.3s;
   }
   .ld-program-card:hover .ld-program-cta { gap: 14px; color: var(--champagne-dk); }
-  @media (max-width: 480px) {
+  @media (max-width: 768px) {
     .ld-programs-grid { grid-template-columns: 1fr; }
   }
 
@@ -577,7 +584,7 @@ const lendingStyles = `
   .ld-why-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 80px;
+    gap: clamp(40px, 6vw, 80px);
     align-items: start;
   }
   .ld-why-features {
@@ -712,8 +719,9 @@ const lendingStyles = `
   }
   .ld-phone-link:hover { opacity: 0.8; }
   @media (max-width: 768px) {
-    .lending-cta-banner { flex-direction: column; text-align: center; padding: 40px 32px; }
     .ld-contact-content p { max-width: none; }
+    .ld-contact-actions { width: 100%; }
+    .ld-contact-actions .btn-primary { width: 100%; justify-content: center; }
   }
 
   /* ── CTA Section (light zone) ── */

@@ -155,7 +155,7 @@ const pfPageStyles = `
   .pf-hero-body {
     flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    text-align: center; padding: 80px 48px 60px;
+    text-align: center; padding: clamp(60px, 8vw, 80px) clamp(20px, 4vw, 48px) clamp(40px, 6vw, 60px);
   }
   .pf-hero-body h1 {
     font-family: var(--font-display);
@@ -174,7 +174,10 @@ const pfPageStyles = `
   .pf-empty p { font-size: 16px; color: var(--text-muted); }
   .pf-empty-sub { font-size: 14px; color: rgba(8,21,37,0.3); margin-top: 8px; }
   .pf-cta {
-    text-align: center; padding: 80px 0 0;
+    text-align: center; padding: clamp(48px, 8vw, 80px) 0 0;
+  }
+  @media (max-width: 600px) {
+    .pf-hero-body p { font-size: 15px; }
   }
   footer { margin-top: 64px; }
 `;

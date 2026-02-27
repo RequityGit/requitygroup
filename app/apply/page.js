@@ -925,9 +925,6 @@ const applyStyles = `
     gap: 40px;
     align-items: start;
   }
-  @media (max-width: 800px) {
-    .step3-layout { grid-template-columns: 1fr; }
-  }
 
   /* ── Deal Summary ── */
   .deal-summary {
@@ -1142,14 +1139,28 @@ const applyStyles = `
   }
 
   /* ── Responsive ── */
+  @media (max-width: 800px) {
+    .step3-layout { grid-template-columns: 1fr; }
+    .deal-summary { position: static; }
+  }
   @media (max-width: 640px) {
-    .apply-container { padding: 32px 20px 48px; }
+    .apply-container { padding: 32px 16px 48px; }
+    .apply-header-inner { padding: 16px 16px; }
     .form-grid { grid-template-columns: 1fr; }
     .loan-type-grid { grid-template-columns: 1fr; }
-    .trust-bar-inner { gap: 16px; flex-direction: column; }
+    .trust-bar-inner { gap: 12px; flex-direction: column; padding: 12px 16px; }
+    .trust-badge { font-size: 12px; }
     .form-nav { flex-direction: column-reverse; gap: 12px; }
     .btn-next, .btn-submit, .btn-back { width: 100%; justify-content: center; }
+    .progress-section { padding: 0 16px; }
     .progress-label { font-size: 10px; }
     .step-header h1 { font-size: 26px; }
+    .step-header p { font-size: 14px; }
+    .success-card { padding: 40px 20px; margin: 40px auto; }
+    .success-card h2 { font-size: 26px; }
+    .form-group label { font-size: 11px; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea { font-size: 16px; padding: 12px 14px; }
   }
 `;

@@ -276,12 +276,12 @@ const insightsPageStyles = `
   }
   .in-hero-content {
     max-width: 800px;
-    padding: 160px 0 80px;
+    padding: clamp(100px, 15vw, 160px) 0 clamp(48px, 8vw, 80px);
   }
   .in-hero h1 {
     font-family: var(--font-display);
-    font-size: clamp(40px, 5vw, 62px);
-    font-weight: 300;
+    font-size: clamp(36px, 5vw, 62px);
+    font-weight: 400;
     line-height: 1.1;
     color: #fff;
     margin-bottom: 28px;
@@ -291,11 +291,11 @@ const insightsPageStyles = `
     color: var(--champagne);
   }
   .in-hero-desc {
-    font-size: 18px;
+    font-size: clamp(15px, 2vw, 18px);
     line-height: 1.75;
     color: rgba(255,255,255,0.55);
     max-width: 640px;
-    font-weight: 300;
+    font-weight: 400;
   }
 
   /* ── Featured Article (light zone) ── */
@@ -330,7 +330,7 @@ const insightsPageStyles = `
     transform: scale(1.05);
   }
   .in-featured-content {
-    padding: 48px 44px;
+    padding: clamp(24px, 4vw, 48px) clamp(20px, 4vw, 44px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -358,7 +358,7 @@ const insightsPageStyles = `
   }
   .in-featured-content h2 {
     font-family: var(--font-display);
-    font-size: 30px;
+    font-size: clamp(22px, 3vw, 30px);
     font-weight: 500;
     line-height: 1.25;
     margin-bottom: 16px;
@@ -405,6 +405,7 @@ const insightsPageStyles = `
   }
   .in-filter-btn {
     padding: 10px 24px;
+    min-height: 44px;
     background: transparent;
     border: 1px solid rgba(8,21,37,0.1);
     border-radius: 6px;

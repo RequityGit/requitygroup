@@ -395,8 +395,12 @@ const aboutPageStyles = `
     color: rgba(255,255,255,0.42);
     max-width: 600px; line-height: 1.7;
   }
+  @media (max-width: 968px) {
+    .ab-hero-body { padding: 72px 32px 48px; }
+  }
   @media (max-width: 600px) {
-    .ab-hero-body { padding: 60px 24px 48px; }
+    .ab-hero-body { padding: 60px 20px 40px; }
+    .ab-hero-p { font-size: 15px; }
   }
 
   /* ── Mission ── */
@@ -426,7 +430,7 @@ const aboutPageStyles = `
   }
   .ab-stat-value {
     font-family: var(--font-display);
-    font-size: 40px;
+    font-size: clamp(28px, 5vw, 40px);
     font-weight: 600;
     color: var(--navy);
     line-height: 1;
@@ -452,7 +456,7 @@ const aboutPageStyles = `
 
   /* ── Three Pillars ── */
   .ab-pillars {
-    padding: 80px 0 0;
+    padding: clamp(48px, 8vw, 80px) 0 0;
   }
   .ab-pillars-header {
     margin-bottom: 48px;
@@ -513,7 +517,7 @@ const aboutPageStyles = `
 
   /* ── Team ── */
   .ab-team {
-    padding: 80px 0 0;
+    padding: clamp(48px, 8vw, 80px) 0 0;
   }
   .ab-team-header {
     margin-bottom: 48px;
@@ -567,7 +571,7 @@ const aboutPageStyles = `
 
   /* ── Values ── */
   .ab-values {
-    padding: 80px 0 0;
+    padding: clamp(48px, 8vw, 80px) 0 0;
   }
   .ab-values-header {
     text-align: center;
@@ -608,7 +612,7 @@ const aboutPageStyles = `
 
   /* ── Testimonials ── */
   .ab-testimonials {
-    padding: 80px 0 0;
+    padding: clamp(48px, 8vw, 80px) 0 0;
   }
   .ab-testimonials-header {
     margin-bottom: 48px;
@@ -627,12 +631,12 @@ const aboutPageStyles = `
 
   /* ── CTA ── */
   .ab-cta {
-    padding: 80px 0 0;
+    padding: clamp(48px, 8vw, 80px) 0 0;
   }
   .ab-cta-banner {
     background: linear-gradient(135deg, var(--navy-deep), var(--navy));
     border-radius: 18px;
-    padding: 72px 56px;
+    padding: clamp(40px, 6vw, 72px) clamp(24px, 5vw, 56px);
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -661,8 +665,10 @@ const aboutPageStyles = `
     align-items: center;
   }
   @media (max-width: 600px) {
-    .ab-cta-banner { padding: 56px 32px; }
-    .ab-cta-actions { flex-direction: column; }
+    .ab-cta-actions { flex-direction: column; width: 100%; }
+    .ab-cta-actions .btn-primary,
+    .ab-cta-actions .btn-secondary { width: 100%; justify-content: center; }
+    .ab-cta-banner { border-radius: 14px; }
   }
 
   /* Footer spacing */
