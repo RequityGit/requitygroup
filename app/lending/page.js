@@ -156,9 +156,8 @@ export default function LendingPage() {
         <nav className="scrolled">
           <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
           <ul className="nav-links" id="navLinks">
-            <li><Link href="/income-fund">Income Fund</Link></li>
-            <li><Link href="/lending" style={{ color: 'var(--champagne)' }}>Lending</Link></li>
-            <li><Link href="/portfolio">Portfolio</Link></li>
+            <li><Link href="/invest">Invest</Link></li>
+            <li><Link href="/lending" style={{ color: 'var(--champagne)' }}>Borrow</Link></li>
             <li><Link href="/about">About</Link></li>
             <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login &rarr;</a></li>
           </ul>
