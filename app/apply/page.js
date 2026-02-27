@@ -429,39 +429,49 @@ export default function ApplyPage() {
   };
 
   /* ─── Google Places Autocomplete (custom dropdown, no widget) ─── */
-  const initPlacesService = useCallback(() => {
-    if (!window.google?.maps?.places) return;
+  const ensurePlacesServices = useCallback(() => {
+    if (!window.google?.maps?.places) return false;
     if (!autocompleteServiceRef.current) {
       autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
     }
     if (!placesServiceRef.current) {
-      placesServiceRef.current = new window.google.maps.places.PlacesService(
-        document.createElement('div')
-      );
+      const container = document.createElement('div');
+      container.style.display = 'none';
+      document.body.appendChild(container);
+      placesServiceRef.current = new window.google.maps.places.PlacesService(container);
     }
+    return true;
   }, []);
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY) return;
-    if (window.google?.maps?.places) { initPlacesService(); return; }
+    if (window.google?.maps?.places) { ensurePlacesServices(); return; }
     const existing = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]');
     if (existing) {
-      existing.addEventListener('load', () => initPlacesService(), { once: true });
+      if (existing.getAttribute('data-loaded') === 'true') { ensurePlacesServices(); return; }
+      existing.addEventListener('load', () => { existing.setAttribute('data-loaded', 'true'); ensurePlacesServices(); }, { once: true });
       return;
     }
     const s = document.createElement('script');
     s.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}&libraries=places`;
     s.async = true;
     s.defer = true;
-    s.onload = () => initPlacesService();
+    s.onload = () => { s.setAttribute('data-loaded', 'true'); ensurePlacesServices(); };
     document.head.appendChild(s);
-  }, [initPlacesService]);
+  }, [ensurePlacesServices]);
 
   const fetchPredictions = useCallback((input) => {
-    if (!input || input.length < 3 || !autocompleteServiceRef.current) {
+    if (!input || input.length < 3) {
       setAddressPredictions([]);
       setShowPredictions(false);
       return;
+    }
+    // Lazy-init: if the service isn't ready yet, try now
+    if (!autocompleteServiceRef.current) {
+      ensurePlacesServices();
+    }
+    if (!autocompleteServiceRef.current) {
+      return; // Google Maps script genuinely not loaded yet
     }
     autocompleteServiceRef.current.getPlacePredictions(
       { input, types: ['address'], componentRestrictions: { country: 'us' } },
@@ -475,11 +485,12 @@ export default function ApplyPage() {
         }
       }
     );
-  }, []);
+  }, [ensurePlacesServices]);
 
   const selectPrediction = useCallback((prediction) => {
     setShowPredictions(false);
     setAddressPredictions([]);
+    if (!placesServiceRef.current) ensurePlacesServices();
     if (!placesServiceRef.current) {
       if (addressInputRef.current) addressInputRef.current.value = prediction.description;
       setForm((prev) => ({ ...prev, propertyAddress: prediction.description }));
@@ -542,12 +553,11 @@ export default function ApplyPage() {
 
   // Clean up on step change
   useEffect(() => {
-    if (step === 2) { initPlacesService(); return; }
+    if (step === 2) { ensurePlacesServices(); return; }
     setAddressPredictions([]);
     setShowPredictions(false);
-    // Remove any orphaned pac-containers from prior widget usage
     document.querySelectorAll('.pac-container').forEach((el) => el.remove());
-  }, [step, initPlacesService]);
+  }, [step, ensurePlacesServices]);
 
   const hasAutoTerms = !!LOAN_PROGRAMS[form.loanType];
   const isCommercial = COMMERCIAL_TERM_TYPES.includes(form.loanType);
@@ -889,7 +899,7 @@ export default function ApplyPage() {
               <div className="form-grid">
                 <div className="form-group full address-autocomplete-wrap">
                   <label>Property Address</label>
-                  <input ref={addressInputRef} type="text" id="property-address-lookup" name="property-address-lookup" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => handleAddressInput(e.target.value)} onFocus={() => { if (addressPredictions.length > 0) setShowPredictions(true); }} autoComplete="one-time-code" data-lpignore="true" data-1p-ignore data-form-type="other" />
+                  <input ref={addressInputRef} type="text" id="property-address-lookup" name="property-address-lookup" placeholder="Start typing an address..." defaultValue={form.propertyAddress} onChange={(e) => handleAddressInput(e.target.value)} onFocus={() => { if (addressPredictions.length > 0) setShowPredictions(true); }} autoComplete="nope" role="presentation" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" />
                   {showPredictions && addressPredictions.length > 0 && (
                     <ul className="address-predictions">
                       {addressPredictions.map((pred) => (
