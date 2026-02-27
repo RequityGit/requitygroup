@@ -112,6 +112,7 @@ const INVESTOR_FAQS = [
 
 export default function InvestorFaqPage() {
   const { lang } = useLanguage();
+  const t = translations.investorFaq[lang];
   const nav = translations.nav[lang];
   const f = translations.footer[lang];
   const [openItems, setOpenItems] = useState({});
@@ -177,10 +178,10 @@ export default function InvestorFaqPage() {
           </nav>
 
           <div className="fq-hero-body">
-            <div className="fq-hero-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>Investor Resources</div>
-            <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>Frequently Asked<br /><em>Questions</em></h1>
+            <div className="fq-hero-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>{t.heroEyebrow}</div>
+            <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>{t.heroTitle}<br /><em>{t.heroTitleEm}</em></h1>
             <p className="fq-hero-p" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.6s forwards' }}>
-              Everything you need to know about investing with Requity Group. Can&apos;t find what you&apos;re looking for? Our investor relations team is here to help.
+              {t.heroDesc}
             </p>
             <div className="fq-hero-actions" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.8s forwards' }}>
               <Link href="/request-access" className="btn-primary">Request Access <ArrowIcon /></Link>
