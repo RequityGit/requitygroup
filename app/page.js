@@ -2,8 +2,16 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '../components/LanguageContext';
+import { LanguageToggle } from '../components/LanguageToggle';
+import translations from '../lib/translations';
 
 export default function HomePage() {
+  const { lang } = useLanguage();
+  const t = translations.home[lang];
+  const nav = translations.nav[lang];
+  const f = translations.footer[lang];
+
   useEffect(() => {
     const navbar = document.querySelector('nav');
     const handleScroll = () => navbar?.classList.toggle('scrolled', window.scrollY > 60);
@@ -50,34 +58,37 @@ export default function HomePage() {
           <nav>
             <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
             <ul className="nav-links" id="navLinks">
-              <li><Link href="/invest">Invest</Link></li>
-              <li><Link href="/lending">Borrow</Link></li>
-              <li><Link href="/about">About</Link></li>
-              <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login &rarr;</a></li>
+              <li><Link href="/invest">{nav.invest}</Link></li>
+              <li><Link href="/lending">{nav.borrow}</Link></li>
+              <li><Link href="/about">{nav.about}</Link></li>
+              <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">{nav.investorLogin} &rarr;</a></li>
             </ul>
-            <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
-              <span></span><span></span><span></span>
-            </button>
+            <div className="nav-right">
+              <LanguageToggle />
+              <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
+                <span></span><span></span><span></span>
+              </button>
+            </div>
           </nav>
 
           {/* Hero content */}
           <div className="hp-hero-body">
-            <div className="hp-hero-eyebrow">Real Estate Investment &amp; Lending</div>
-            <h1>Investing &amp; lending in <em>value-add</em> real estate</h1>
-            <p className="hp-hero-p">We apply operational expertise to small-cap real estate — creating value in niche markets that institutional capital cannot efficiently pursue.</p>
+            <div className="hp-hero-eyebrow">{t.heroEyebrow}</div>
+            <h1>{t.heroTitle1} <em>{t.heroTitleEm}</em> {t.heroTitle2}</h1>
+            <p className="hp-hero-p">{t.heroDesc}</p>
             <div className="hp-hero-btns">
-              <Link href="/request-access" className="btn-primary">Request Access <ArrowIcon /></Link>
-              <Link href="/apply" className="btn-primary">Request a Loan <ArrowIcon /></Link>
+              <Link href="/request-access" className="btn-primary">{t.requestAccess} <ArrowIcon /></Link>
+              <Link href="/apply" className="btn-primary">{t.requestLoan} <ArrowIcon /></Link>
             </div>
           </div>
         </div>
 
         {/* Stats Bar */}
         <div className="stats-bar" style={{ margin: '0 auto', position: 'relative', zIndex: 2 }}>
-          <div className="stat-cell"><div className="stat-num champagne">$150M+</div><div className="stat-lbl">Assets Under Management</div></div>
-          <div className="stat-cell"><div className="stat-num">32</div><div className="stat-lbl">Properties Acquired</div></div>
-          <div className="stat-cell"><div className="stat-num">70+</div><div className="stat-lbl">Loans Originated</div></div>
-          <div className="stat-cell"><div className="stat-num champagne">$70M+</div><div className="stat-lbl">Investor Capital Raised</div></div>
+          <div className="stat-cell"><div className="stat-num champagne">$150M+</div><div className="stat-lbl">{t.statAum}</div></div>
+          <div className="stat-cell"><div className="stat-num">32</div><div className="stat-lbl">{t.statProperties}</div></div>
+          <div className="stat-cell"><div className="stat-num">70+</div><div className="stat-lbl">{t.statLoans}</div></div>
+          <div className="stat-cell"><div className="stat-num champagne">$70M+</div><div className="stat-lbl">{t.statCapital}</div></div>
         </div>
 
         <div style={{ height: 64, background: 'var(--navy-deep)' }} />
@@ -93,41 +104,41 @@ export default function HomePage() {
           {/* What We Do */}
           <section className="hp-wwd">
             <div className="hp-wwd-header">
-              <h2 className="reveal">Three verticals.<br />One <em>determined</em> partner.</h2>
-              <p className="reveal reveal-delay-1">We don&apos;t just invest in real estate — we operate it. Every acquisition is managed by our in-house team, and our lending arm gives operators the capital they need to execute.</p>
+              <h2 className="reveal">{t.wwdTitle1}<br />{t.wwdTitle2} <em>{t.wwdTitleEm}</em> {t.wwdTitle3}</h2>
+              <p className="reveal reveal-delay-1">{t.wwdDesc}</p>
             </div>
             <div className="hp-card-grid">
               <div className="card reveal reveal-delay-1">
                 <div className="hp-card-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
                 </div>
-                <h3>Invest</h3>
-                <p>Off-market acquisitions through our extensive network and direct outreach — targeting MHC, RV, and multifamily in the Southeast.</p>
+                <h3>{t.cardInvest}</h3>
+                <p>{t.cardInvestDesc}</p>
                 <div className="hp-metric-row">
                   <span className="hp-metric-num">32</span>
-                  <span className="hp-metric-lbl">Properties Acquired</span>
+                  <span className="hp-metric-lbl">{t.cardPropertiesAcquired}</span>
                 </div>
               </div>
               <div className="card reveal reveal-delay-2">
                 <div className="hp-card-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                 </div>
-                <h3>Operate</h3>
-                <p>In-house management through TRG Living with 60+ team members executing our value-add business plans.</p>
+                <h3>{t.cardOperate}</h3>
+                <p>{t.cardOperateDesc}</p>
                 <div className="hp-metric-row">
                   <span className="hp-metric-num accent">$150M+</span>
-                  <span className="hp-metric-lbl">Under Management</span>
+                  <span className="hp-metric-lbl">{t.cardUnderManagement}</span>
                 </div>
               </div>
               <div className="card reveal reveal-delay-3">
                 <div className="hp-card-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" /></svg>
                 </div>
-                <h3>Lend</h3>
-                <p>Commercial and residential bridge loans — backed by asset-level underwriting and deep operational insight.</p>
+                <h3>{t.cardLend}</h3>
+                <p>{t.cardLendDesc}</p>
                 <div className="hp-metric-row">
                   <span className="hp-metric-num">70+</span>
-                  <span className="hp-metric-lbl">Loans Originated</span>
+                  <span className="hp-metric-lbl">{t.cardLoansOriginated}</span>
                 </div>
               </div>
             </div>
@@ -135,10 +146,10 @@ export default function HomePage() {
             {/* Lending CTA */}
             <div className="lending-cta-banner reveal" style={{ marginTop: 24 }}>
               <div>
-                <h3>Need a <em>bridge loan?</em></h3>
-                <p>Fast underwriting, operator-friendly terms. Commercial and residential bridge loans from a team that understands real estate from the inside out.</p>
+                <h3>{t.bridgeTitle1} <em>{t.bridgeTitleEm}</em></h3>
+                <p>{t.bridgeDesc}</p>
               </div>
-              <Link href="/apply" className="btn-primary" style={{ borderRadius: 8, whiteSpace: 'nowrap' }}>Request a Quote <ArrowIcon /></Link>
+              <Link href="/apply" className="btn-primary" style={{ borderRadius: 8, whiteSpace: 'nowrap' }}>{t.requestQuote} <ArrowIcon /></Link>
             </div>
           </section>
 
@@ -147,16 +158,16 @@ export default function HomePage() {
             <div className="test-card reveal">
               <div className="big-q">&ldquo;</div>
               <div className="stars">&#9733; &#9733; &#9733; &#9733; &#9733;</div>
-              <div className="quote-text">&ldquo;Their reporting style and communication cadence is timely, consistent, and detailed. I always feel well-informed on my investments. I hold Dylan and the entire Requity Group team in very high regard.&rdquo;</div>
-              <div className="author-name">Todd G.</div>
-              <div className="author-role">LP Investor</div>
+              <div className="quote-text">{t.testimonial1}</div>
+              <div className="author-name">{t.testimonial1Author}</div>
+              <div className="author-role">{t.testimonial1Role}</div>
             </div>
             <div className="test-card reveal reveal-delay-1">
               <div className="big-q">&ldquo;</div>
               <div className="stars">&#9733; &#9733; &#9733; &#9733; &#9733;</div>
-              <div className="quote-text">&ldquo;This group is one of the only that have consistently overdelivered — sometimes substantially — on their projections. Their team is highly responsive and provides clear, consistent investor updates.&rdquo;</div>
-              <div className="author-name">Marshall F.</div>
-              <div className="author-role">LP Investor</div>
+              <div className="quote-text">{t.testimonial2}</div>
+              <div className="author-name">{t.testimonial2Author}</div>
+              <div className="author-role">{t.testimonial2Role}</div>
             </div>
           </div>
 
@@ -164,50 +175,50 @@ export default function HomePage() {
           <div className="hp-values">
             <div className="value-item reveal reveal-delay-1">
               <div className="value-num">01</div>
-              <h4>Be Caring</h4>
-              <p>We invest in communities — creating places residents and guests can truly call home.</p>
+              <h4>{t.value1Title}</h4>
+              <p>{t.value1Desc}</p>
             </div>
             <div className="value-item reveal reveal-delay-2">
               <div className="value-num">02</div>
-              <h4>Be Honest</h4>
-              <p>Transparent reporting, proactive communication, and straightforward deal structures.</p>
+              <h4>{t.value2Title}</h4>
+              <p>{t.value2Desc}</p>
             </div>
             <div className="value-item reveal reveal-delay-3">
               <div className="value-num">03</div>
-              <h4>Be Excellent</h4>
-              <p>A small, high-achieving team committed to operational excellence at every level.</p>
+              <h4>{t.value3Title}</h4>
+              <p>{t.value3Desc}</p>
             </div>
           </div>
 
           {/* Insights */}
           <div className="hp-insights">
             <div className="hp-insights-header reveal">
-              <h2>Recent Insights</h2>
-              <Link href="/insights">See All &rarr;</Link>
+              <h2>{t.recentInsights}</h2>
+              <Link href="/insights">{t.seeAll} &rarr;</Link>
             </div>
             <div className="hp-insights-grid">
               <div className="hp-insight-card reveal reveal-delay-1">
                 <div className="hp-insight-img"><div className="hp-play-icon">&#9654;</div></div>
                 <div className="hp-insight-body">
-                  <div className="hp-insight-tag">Podcast</div>
-                  <h3>Decoding Real Estate Syndication Legal Documents</h3>
-                  <p>Key takeaways for LPs evaluating their next investment.</p>
+                  <div className="hp-insight-tag">{t.insight1Tag}</div>
+                  <h3>{t.insight1Title}</h3>
+                  <p>{t.insight1Desc}</p>
                 </div>
               </div>
               <div className="hp-insight-card reveal reveal-delay-2">
                 <div className="hp-insight-img" style={{ background: 'linear-gradient(135deg, var(--navy-mid), var(--navy-light))' }}><div className="hp-play-icon">&#9654;</div></div>
                 <div className="hp-insight-body">
-                  <div className="hp-insight-tag">Podcast</div>
-                  <h3>Acquisitions Best Practices with Troy Trecroce</h3>
-                  <p>How we source and close off-market deals in the Southeast.</p>
+                  <div className="hp-insight-tag">{t.insight2Tag}</div>
+                  <h3>{t.insight2Title}</h3>
+                  <p>{t.insight2Desc}</p>
                 </div>
               </div>
               <div className="hp-insight-card reveal reveal-delay-3">
                 <div className="hp-insight-img" style={{ background: 'linear-gradient(135deg, var(--navy-light), var(--navy-muted))' }}><div className="hp-play-icon">&#9654;</div></div>
                 <div className="hp-insight-body">
-                  <div className="hp-insight-tag">Podcast</div>
-                  <h3>Investor Reporting: Building Strong Partnerships</h3>
-                  <p>Why communication cadence matters as much as returns.</p>
+                  <div className="hp-insight-tag">{t.insight3Tag}</div>
+                  <h3>{t.insight3Title}</h3>
+                  <p>{t.insight3Desc}</p>
                 </div>
               </div>
             </div>
@@ -218,14 +229,14 @@ export default function HomePage() {
             <div className="footer-grid">
               <div className="footer-brand">
                 <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
-                <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
+                <p>{f.brand}</p>
               </div>
-              <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
-              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/request-access">Request Access</Link><Link href="/investor-faq">Investor FAQ</Link></div>
-              <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Request a Quote</Link><Link href="/apply">Loan Application</Link><Link href="/borrower-faq">Borrower FAQ</Link></div>
+              <div className="footer-col"><h4>{f.company}</h4><Link href="/about">{f.about}</Link><Link href="/portfolio">{f.portfolio}</Link><Link href="/insights">{f.insights}</Link></div>
+              <div className="footer-col"><h4>{f.invest}</h4><Link href="/income-fund">{f.incomeFund}</Link><a href="https://investors.appfolioim.com/trg/investor/login">{f.investorLogin}</a><Link href="/request-access">{f.requestAccess}</Link><Link href="/investor-faq">{f.investorFaq}</Link></div>
+              <div className="footer-col"><h4>{f.lending}</h4><Link href="/lending">{f.loanPrograms}</Link><Link href="/apply">{f.requestQuote}</Link><Link href="/apply">{f.loanApplication}</Link><Link href="/borrower-faq">{f.borrowerFaq}</Link></div>
             </div>
             <div className="footer-bottom">
-              <p>&copy; 2026 Requity Group. All rights reserved. &nbsp;|&nbsp; 401 E Jackson St Ste 3300, Tampa, FL 33602 &nbsp;|&nbsp; 813.288.0636</p>
+              <p>{f.copyright} &nbsp;|&nbsp; {f.address} &nbsp;|&nbsp; {f.phone}</p>
             </div>
           </footer>
         </div>

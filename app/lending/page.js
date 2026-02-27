@@ -2,6 +2,9 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '../../components/LanguageContext';
+import { LanguageToggle } from '../../components/LanguageToggle';
+import translations from '../../lib/translations';
 
 const LOAN_PROGRAMS = [
   {
@@ -139,6 +142,12 @@ export default function LendingPage() {
     return () => observer.disconnect();
   }, []);
 
+  const { lang } = useLanguage();
+  const t = translations.lending[lang];
+  const lp = translations.loanPrograms[lang];
+  const nav = translations.nav[lang];
+  const f = translations.footer[lang];
+
   const ArrowIcon = () => (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -156,14 +165,17 @@ export default function LendingPage() {
         <nav className="scrolled">
           <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
           <ul className="nav-links" id="navLinks">
-            <li><Link href="/invest">Invest</Link></li>
-            <li><Link href="/lending" style={{ color: 'var(--champagne)' }}>Borrow</Link></li>
-            <li><Link href="/about">About</Link></li>
-            <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login &rarr;</a></li>
+            <li><Link href="/invest">{nav.invest}</Link></li>
+            <li><Link href="/lending" style={{ color: 'var(--champagne)' }}>{nav.borrow}</Link></li>
+            <li><Link href="/about">{nav.about}</Link></li>
+            <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">{nav.investorLogin} &rarr;</a></li>
           </ul>
-          <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
-            <span></span><span></span><span></span>
-          </button>
+          <div className="nav-right">
+            <LanguageToggle />
+            <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
+              <span></span><span></span><span></span>
+            </button>
+          </div>
         </nav>
 
         {/* Hero */}
@@ -171,23 +183,23 @@ export default function LendingPage() {
           <div className="container">
             <div className="ld-hero-grid">
               <div className="ld-hero-content">
-                <div className="section-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>Requity Lending</div>
-                <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>Real Estate Lending<br />by <em>Real Operators</em></h1>
+                <div className="section-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>{t.heroEyebrow}</div>
+                <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>{t.heroTitle1}<br />{t.heroTitle2} <em>{t.heroTitleEm}</em></h1>
                 <p className="ld-hero-desc" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.6s forwards' }}>
-                  We&apos;re not just lenders — we&apos;re operators. Our team brings decades of hands-on real estate experience to every loan we underwrite, providing faster execution and smarter capital solutions.
+                  {t.heroDesc}
                 </p>
                 <div className="ld-hero-actions" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.8s forwards' }}>
-                  <Link href="/apply" className="btn-primary">Request a Loan <ArrowIcon /></Link>
-                  <a href="tel:+18133275180" className="btn-secondary">Call 813.327.5180</a>
+                  <Link href="/apply" className="btn-primary">{t.requestLoan} <ArrowIcon /></Link>
+                  <a href="tel:+18133275180" className="btn-secondary">{t.callUs}</a>
                 </div>
               </div>
               <div className="ld-hero-stats" style={{ opacity: 0, animation: 'fadeIn 1s 0.6s forwards' }}>
                 <div className="ld-stats-card">
-                  <h3>Lending Track Record</h3>
+                  <h3>{t.lendingTrackRecord}</h3>
                   <div className="ld-stat-row">
-                    <div className="ld-stat"><div className="ld-stat-number">70+</div><div className="ld-stat-label">Loans<br />Originated</div></div>
-                    <div className="ld-stat"><div className="ld-stat-number">$150M+</div><div className="ld-stat-label">Capital<br />Deployed</div></div>
-                    <div className="ld-stat"><div className="ld-stat-number">14 Day</div><div className="ld-stat-label">Average<br />Close Time</div></div>
+                    <div className="ld-stat"><div className="ld-stat-number">70+</div><div className="ld-stat-label">{t.loansOriginated}</div></div>
+                    <div className="ld-stat"><div className="ld-stat-number">$150M+</div><div className="ld-stat-label">{t.capitalDeployed}</div></div>
+                    <div className="ld-stat"><div className="ld-stat-number">14 Day</div><div className="ld-stat-label">{t.avgCloseTime}</div></div>
                   </div>
                 </div>
               </div>
@@ -197,10 +209,10 @@ export default function LendingPage() {
 
         {/* Stats Bar */}
         <div className="stats-bar" style={{ margin: '0 auto', position: 'relative', zIndex: 2 }}>
-          <div className="stat-cell"><div className="stat-num champagne">70+</div><div className="stat-lbl">Loans Originated</div></div>
-          <div className="stat-cell"><div className="stat-num">$150M+</div><div className="stat-lbl">Capital Deployed</div></div>
-          <div className="stat-cell"><div className="stat-num">14 Day</div><div className="stat-lbl">Avg Close Time</div></div>
-          <div className="stat-cell"><div className="stat-num champagne">7</div><div className="stat-lbl">Loan Programs</div></div>
+          <div className="stat-cell"><div className="stat-num champagne">70+</div><div className="stat-lbl">{t.statLoans}</div></div>
+          <div className="stat-cell"><div className="stat-num">$150M+</div><div className="stat-lbl">{t.statCapital}</div></div>
+          <div className="stat-cell"><div className="stat-num">14 Day</div><div className="stat-lbl">{t.statClose}</div></div>
+          <div className="stat-cell"><div className="stat-num champagne">7</div><div className="stat-lbl">{t.statPrograms}</div></div>
         </div>
 
         <div style={{ height: 64, background: 'var(--navy-deep)' }} />
@@ -216,9 +228,9 @@ export default function LendingPage() {
           {/* Loan Programs */}
           <section className="ld-programs">
             <div className="ld-programs-header reveal">
-              <div className="section-eyebrow section-eyebrow-dark">Loan Programs</div>
-              <h2 className="section-title">Financing for Every Strategy</h2>
-              <p className="section-desc">Whether you&apos;re acquiring, renovating, or building, we have a loan program tailored to your real estate investment strategy.</p>
+              <div className="section-eyebrow section-eyebrow-dark">{t.programsEyebrow}</div>
+              <h2 className="section-title">{t.programsTitle}</h2>
+              <p className="section-desc">{t.programsDesc}</p>
             </div>
             <div className="ld-programs-grid">
               {LOAN_PROGRAMS.map((program, i) => (
@@ -228,18 +240,18 @@ export default function LendingPage() {
                   className={`ld-program-card card reveal ${i < 3 ? `reveal-delay-${i + 1}` : ''}`}
                 >
                   <div className="ld-program-icon">{program.icon}</div>
-                  <h3>{program.name}</h3>
-                  <p>{program.desc}</p>
+                  <h3>{lp[program.id]?.name || program.name}</h3>
+                  <p>{lp[program.id]?.desc || program.desc}</p>
                   <ul className="ld-program-features">
-                    {program.features.map((f) => (
-                      <li key={f}>
+                    {(lp[program.id]?.features || program.features).map((feat) => (
+                      <li key={feat}>
                         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8l3 3 5-5" /></svg>
-                        {f}
+                        {feat}
                       </li>
                     ))}
                   </ul>
                   <div className="ld-program-cta">
-                    Apply Now <ArrowIcon />
+                    {t.applyNow} <ArrowIcon />
                   </div>
                 </Link>
               ))}
@@ -250,9 +262,9 @@ export default function LendingPage() {
           <section className="ld-why">
             <div className="ld-why-grid">
               <div className="reveal">
-                <div className="section-eyebrow section-eyebrow-dark">Why Requity Lending</div>
-                <h2 className="section-title">Capital from People<br />Who Understand Your <em>Deal</em></h2>
-                <p className="section-desc">Most lenders underwrite spreadsheets. We underwrite real estate. Our hands-on operational experience means we understand the nuances of your deal and can move quickly with confidence.</p>
+                <div className="section-eyebrow section-eyebrow-dark">{t.whyEyebrow}</div>
+                <h2 className="section-title">{t.whyTitle1}<br />{t.whyTitle2} <em>{t.whyTitleEm}</em></h2>
+                <p className="section-desc">{t.whyDesc}</p>
               </div>
               <div className="ld-why-features reveal reveal-delay-2">
                 <div className="ld-why-feature">
@@ -263,8 +275,8 @@ export default function LendingPage() {
                     </svg>
                   </div>
                   <div>
-                    <h4>Fast Execution</h4>
-                    <p>Close in as little as 10 days. We make decisions in-house — no committees, no bureaucracy, no delays.</p>
+                    <h4>{t.fastExecution}</h4>
+                    <p>{t.fastExecutionDesc}</p>
                   </div>
                 </div>
                 <div className="ld-why-feature">
@@ -274,8 +286,8 @@ export default function LendingPage() {
                     </svg>
                   </div>
                   <div>
-                    <h4>Certainty of Close</h4>
-                    <p>When we issue a term sheet, we close. Our track record speaks for itself — borrowers come back because we deliver.</p>
+                    <h4>{t.certaintyOfClose}</h4>
+                    <p>{t.certaintyOfCloseDesc}</p>
                   </div>
                 </div>
                 <div className="ld-why-feature">
@@ -287,8 +299,8 @@ export default function LendingPage() {
                     </svg>
                   </div>
                   <div>
-                    <h4>Operator Mentality</h4>
-                    <p>We&apos;ve been in your shoes. Our lending team includes experienced operators who understand value-add execution.</p>
+                    <h4>{t.operatorMentality}</h4>
+                    <p>{t.operatorMentalityDesc}</p>
                   </div>
                 </div>
                 <div className="ld-why-feature">
@@ -298,8 +310,8 @@ export default function LendingPage() {
                     </svg>
                   </div>
                   <div>
-                    <h4>Direct Communication</h4>
-                    <p>Talk directly to decision-makers from day one. No loan officers, no middlemen — just direct access to our lending team.</p>
+                    <h4>{t.directCommunication}</h4>
+                    <p>{t.directCommunicationDesc}</p>
                   </div>
                 </div>
               </div>
@@ -309,29 +321,29 @@ export default function LendingPage() {
           {/* Process */}
           <section className="ld-process">
             <div className="ld-process-header reveal">
-              <div className="section-eyebrow section-eyebrow-dark">Our Process</div>
-              <h2 className="section-title">From Application to <em>Funding</em></h2>
+              <div className="section-eyebrow section-eyebrow-dark">{t.processEyebrow}</div>
+              <h2 className="section-title">{t.processTitle} <em>{t.processTitleEm}</em></h2>
             </div>
             <div className="ld-process-steps">
               <div className="ld-process-step card reveal reveal-delay-1">
                 <div className="ld-step-number">01</div>
-                <h3>Submit Your Deal</h3>
-                <p>Complete our simple loan request form with your deal details. No credit pull, no commitment — just tell us about your project.</p>
+                <h3>{t.step1Title}</h3>
+                <p>{t.step1Desc}</p>
               </div>
               <div className="ld-process-step card reveal reveal-delay-2">
                 <div className="ld-step-number">02</div>
-                <h3>Receive a Term Sheet</h3>
-                <p>Our team reviews your request and issues a term sheet within 24 hours outlining loan amount, rate, and terms.</p>
+                <h3>{t.step2Title}</h3>
+                <p>{t.step2Desc}</p>
               </div>
               <div className="ld-process-step card reveal reveal-delay-3">
                 <div className="ld-step-number">03</div>
-                <h3>Underwriting &amp; Diligence</h3>
-                <p>We conduct property-level due diligence and finalize loan documents. Our in-house process keeps things moving fast.</p>
+                <h3>{t.step3Title}</h3>
+                <p>{t.step3Desc}</p>
               </div>
               <div className="ld-process-step card reveal">
                 <div className="ld-step-number">04</div>
-                <h3>Close &amp; Fund</h3>
-                <p>Funds are wired at closing. Most deals close in 10–14 days from term sheet acceptance. Get to work on your project.</p>
+                <h3>{t.step4Title}</h3>
+                <p>{t.step4Desc}</p>
               </div>
             </div>
           </section>
@@ -340,11 +352,11 @@ export default function LendingPage() {
           <section className="ld-contact">
             <div className="lending-cta-banner reveal">
               <div className="ld-contact-content">
-                <h3>Have a deal? <em>Let&apos;s talk.</em></h3>
-                <p>Our lending team is available to discuss your project and provide a quick indication of terms. No obligation, no credit pull.</p>
+                <h3>{t.contactTitle1} <em>{t.contactTitleEm}</em></h3>
+                <p>{t.contactDesc}</p>
               </div>
               <div className="ld-contact-actions">
-                <Link href="/apply" className="btn-primary" style={{ borderRadius: 8, whiteSpace: 'nowrap' }}>Submit Loan Request <ArrowIcon /></Link>
+                <Link href="/apply" className="btn-primary" style={{ borderRadius: 8, whiteSpace: 'nowrap' }}>{t.submitLoanRequest} <ArrowIcon /></Link>
                 <a href="tel:+18133275180" className="ld-phone-link">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
                   813.327.5180
@@ -356,13 +368,13 @@ export default function LendingPage() {
           {/* CTA for Investors */}
           <section className="ld-cta">
             <div className="ld-cta-inner reveal">
-              <div className="section-eyebrow section-eyebrow-dark">Investors</div>
-              <h2 className="section-title" style={{ textAlign: 'center' }}>Looking to Invest, Not Borrow?</h2>
+              <div className="section-eyebrow section-eyebrow-dark">{t.investorsEyebrow}</div>
+              <h2 className="section-title" style={{ textAlign: 'center' }}>{t.investorsTitle}</h2>
               <p className="section-desc" style={{ maxWidth: 560, margin: '0 auto 40px', textAlign: 'center' }}>
-                Our Income Fund provides accredited investors with consistent monthly income backed by the same real estate loans we originate.
+                {t.investorsDesc}
               </p>
               <Link href="/income-fund" className="btn-primary-light">
-                Learn About the Income Fund <ArrowIcon />
+                {t.learnAboutFund} <ArrowIcon />
               </Link>
             </div>
           </section>
@@ -372,14 +384,14 @@ export default function LendingPage() {
             <div className="footer-grid">
               <div className="footer-brand">
                 <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
-                <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
+                <p>{f.brand}</p>
               </div>
-              <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
-              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/request-access">Request Access</Link><Link href="/investor-faq">Investor FAQ</Link></div>
-              <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Request a Quote</Link><Link href="/apply">Loan Application</Link><Link href="/borrower-faq">Borrower FAQ</Link></div>
+              <div className="footer-col"><h4>{f.company}</h4><Link href="/about">{f.about}</Link><Link href="/portfolio">{f.portfolio}</Link><Link href="/insights">{f.insights}</Link></div>
+              <div className="footer-col"><h4>{f.invest}</h4><Link href="/income-fund">{f.incomeFund}</Link><a href="https://investors.appfolioim.com/trg/investor/login">{f.investorLogin}</a><Link href="/request-access">{f.requestAccess}</Link><Link href="/investor-faq">{f.investorFaq}</Link></div>
+              <div className="footer-col"><h4>{f.lending}</h4><Link href="/lending">{f.loanPrograms}</Link><Link href="/apply">{f.requestQuote}</Link><Link href="/apply">{f.loanApplication}</Link><Link href="/borrower-faq">{f.borrowerFaq}</Link></div>
             </div>
             <div className="footer-bottom">
-              <p>&copy; 2026 Requity Group. All rights reserved. &nbsp;|&nbsp; 401 E Jackson St Ste 3300, Tampa, FL 33602 &nbsp;|&nbsp; 813.288.0636</p>
+              <p>{f.copyright} &nbsp;|&nbsp; {f.address} &nbsp;|&nbsp; {f.phone}</p>
             </div>
           </footer>
         </div>

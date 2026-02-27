@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '../../components/LanguageContext';
+import { LanguageToggle } from '../../components/LanguageToggle';
+import translations from '../../lib/translations';
 
 const US_STATES = [
   'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
@@ -15,6 +18,10 @@ const US_STATES = [
 ];
 
 export default function RequestAccessPage() {
+  const { lang } = useLanguage();
+  const t = translations.requestAccess[lang];
+  const nav = translations.nav[lang];
+  const f = translations.footer[lang];
   // Step: 'form' → 'profile' → 'complete'
   const [step, setStep] = useState('form');
 
@@ -174,9 +181,9 @@ export default function RequestAccessPage() {
   // ─── Hero content per step ───
   const heroContent = {
     form: {
-      eyebrow: 'Income Fund',
-      heading: <>Request Access to the<br /><em>Requity Income Fund</em></>,
-      desc: 'Complete the form below and our investor relations team will provide you with the fund offering documents and next steps.',
+      eyebrow: t.heroEyebrow,
+      heading: <>{t.heroTitle}<br /><em>{t.heroTitleEm}</em></>,
+      desc: t.heroDesc,
     },
     profile: {
       eyebrow: 'Investor Profile',
@@ -201,14 +208,17 @@ export default function RequestAccessPage() {
         <nav className="scrolled">
           <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
           <ul className="nav-links" id="navLinks">
-            <li><Link href="/invest">Invest</Link></li>
-            <li><Link href="/lending">Borrow</Link></li>
-            <li><Link href="/about">About</Link></li>
-            <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login &rarr;</a></li>
+            <li><Link href="/invest">{nav.invest}</Link></li>
+            <li><Link href="/lending">{nav.borrow}</Link></li>
+            <li><Link href="/about">{nav.about}</Link></li>
+            <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">{nav.investorLogin} &rarr;</a></li>
           </ul>
-          <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
-            <span></span><span></span><span></span>
-          </button>
+          <div className="nav-right">
+            <LanguageToggle />
+            <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
+              <span></span><span></span><span></span>
+            </button>
+          </div>
         </nav>
 
         {/* Hero */}
@@ -483,14 +493,14 @@ export default function RequestAccessPage() {
               <div className="footer-grid">
                 <div className="footer-brand">
                   <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
-                  <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
+                  <p>{f.brand}</p>
                 </div>
-                <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
-                <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/request-access">Request Access</Link><Link href="/investor-faq">Investor FAQ</Link></div>
-                <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Request a Quote</Link><Link href="/apply">Loan Application</Link><Link href="/borrower-faq">Borrower FAQ</Link></div>
+                <div className="footer-col"><h4>{f.company}</h4><Link href="/about">{f.about}</Link><Link href="/portfolio">{f.portfolio}</Link><Link href="/insights">{f.insights}</Link></div>
+                <div className="footer-col"><h4>{f.invest}</h4><Link href="/income-fund">{f.incomeFund}</Link><a href="https://investors.appfolioim.com/trg/investor/login">{f.investorLogin}</a><Link href="/request-access">{f.requestAccess}</Link><Link href="/investor-faq">{f.investorFaq}</Link></div>
+                <div className="footer-col"><h4>{f.lending}</h4><Link href="/lending">{f.loanPrograms}</Link><Link href="/apply">{f.requestQuote}</Link><Link href="/apply">{f.loanApplication}</Link><Link href="/borrower-faq">{f.borrowerFaq}</Link></div>
               </div>
               <div className="footer-bottom">
-                <p>&copy; 2026 Requity Group. All rights reserved. &nbsp;|&nbsp; 401 E Jackson St Ste 3300, Tampa, FL 33602 &nbsp;|&nbsp; 813.288.0636</p>
+                <p>{f.copyright} &nbsp;|&nbsp; {f.address} &nbsp;|&nbsp; {f.phone}</p>
               </div>
             </footer>
           </div>

@@ -2,8 +2,16 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '../../components/LanguageContext';
+import { LanguageToggle } from '../../components/LanguageToggle';
+import translations from '../../lib/translations';
 
 export default function AboutPage() {
+  const { lang } = useLanguage();
+  const t = translations.about[lang];
+  const nav = translations.nav[lang];
+  const f = translations.footer[lang];
+
   useEffect(() => {
     const reveals = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver(
@@ -43,22 +51,25 @@ export default function AboutPage() {
           <nav className="scrolled">
             <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
             <ul className="nav-links" id="navLinks">
-              <li><Link href="/invest">Invest</Link></li>
-              <li><Link href="/lending">Borrow</Link></li>
-              <li><Link href="/about" style={{ color: 'var(--champagne)' }}>About</Link></li>
-              <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login &rarr;</a></li>
+              <li><Link href="/invest">{nav.invest}</Link></li>
+              <li><Link href="/lending">{nav.borrow}</Link></li>
+              <li><Link href="/about" style={{ color: 'var(--champagne)' }}>{nav.about}</Link></li>
+              <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">{nav.investorLogin} &rarr;</a></li>
             </ul>
-            <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
-              <span></span><span></span><span></span>
-            </button>
+            <div className="nav-right">
+              <LanguageToggle />
+              <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
+                <span></span><span></span><span></span>
+              </button>
+            </div>
           </nav>
 
           {/* Hero content */}
           <div className="ab-hero-body">
-            <div className="ab-hero-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>About Requity</div>
-            <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>Operational Expertise.<br /><em>Investor-First</em> Approach.</h1>
+            <div className="ab-hero-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>{t.heroEyebrow}</div>
+            <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>{t.heroTitle1}<br /><em>{t.heroTitleEm}</em> {t.heroTitle2}</h1>
             <p className="ab-hero-p" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.6s forwards' }}>
-              Requity Group is a vertically integrated real estate investment company that applies deep operational expertise to small-cap real estate. We create value in niche markets that institutional capital cannot efficiently pursue.
+              {t.heroDesc}
             </p>
           </div>
         </div>
@@ -77,27 +88,27 @@ export default function AboutPage() {
           <section className="ab-mission">
             <div className="ab-mission-content">
               <div className="reveal">
-                <div className="section-eyebrow section-eyebrow-dark">Our Mission</div>
-                <h2 className="section-title">Creating Value Through<br /><em>Vertically Integrated</em> Operations</h2>
-                <p className="section-desc">From acquisitions to operations to lending, we control every element of the value chain. This integrated approach allows us to deliver superior risk-adjusted returns while maintaining the transparency and communication our investors expect.</p>
+                <div className="section-eyebrow section-eyebrow-dark">{t.missionEyebrow}</div>
+                <h2 className="section-title">{t.missionTitle1}<br /><em>{t.missionTitleEm}</em> {t.missionTitle2}</h2>
+                <p className="section-desc">{t.missionDesc}</p>
               </div>
             </div>
             <div className="ab-stats-grid reveal reveal-delay-2">
               <div className="ab-stat-card">
                 <div className="ab-stat-value">$150M+</div>
-                <div className="ab-stat-label">Assets Under Management</div>
+                <div className="ab-stat-label">{t.statAum}</div>
               </div>
               <div className="ab-stat-card">
                 <div className="ab-stat-value">32</div>
-                <div className="ab-stat-label">Properties Acquired</div>
+                <div className="ab-stat-label">{t.statProperties}</div>
               </div>
               <div className="ab-stat-card">
                 <div className="ab-stat-value">70+</div>
-                <div className="ab-stat-label">Loans Originated</div>
+                <div className="ab-stat-label">{t.statLoans}</div>
               </div>
               <div className="ab-stat-card">
                 <div className="ab-stat-value">3,000+</div>
-                <div className="ab-stat-label">Units Transacted</div>
+                <div className="ab-stat-label">{t.statUnits}</div>
               </div>
             </div>
           </section>
@@ -105,9 +116,9 @@ export default function AboutPage() {
           {/* Three Pillars */}
           <section className="ab-pillars">
             <div className="ab-pillars-header reveal">
-              <div className="section-eyebrow section-eyebrow-dark">What We Do</div>
-              <h2 className="section-title">Three Pillars of <em>Our Platform</em></h2>
-              <p className="section-desc">Our vertically integrated model spans three core competencies, each reinforcing the others to create a resilient and high-performing investment platform.</p>
+              <div className="section-eyebrow section-eyebrow-dark">{t.pillarsEyebrow}</div>
+              <h2 className="section-title">{t.pillarsTitle} <em>{t.pillarsTitleEm}</em></h2>
+              <p className="section-desc">{t.pillarsDesc}</p>
             </div>
             <div className="ab-pillars-grid">
               <div className="card reveal reveal-delay-1">
@@ -117,9 +128,9 @@ export default function AboutPage() {
                   </svg>
                 </div>
                 <div className="ab-pillar-number">01</div>
-                <h3>Invest</h3>
-                <p>We source the majority of our acquisitions off-market through our extensive network and direct outreach strategies. Our focus on manufactured housing, RV parks, and multifamily assets in the Southeast allows us to find value where institutional capital cannot.</p>
-                <Link href="/income-fund" className="ab-pillar-link">Income Fund <ArrowIcon /></Link>
+                <h3>{t.pillarInvest}</h3>
+                <p>{t.pillarInvestDesc}</p>
+                <Link href="/income-fund" className="ab-pillar-link">{t.pillarInvestLink} <ArrowIcon /></Link>
               </div>
               <div className="card reveal reveal-delay-2">
                 <div className="ab-pillar-icon">
@@ -128,9 +139,9 @@ export default function AboutPage() {
                   </svg>
                 </div>
                 <div className="ab-pillar-number">02</div>
-                <h3>Operate</h3>
-                <p>Each acquisition is managed by TRG Living, our subsidiary property management company. We rigorously execute on property improvement programs with decades of combined operational experience, ensuring every asset reaches its full potential.</p>
-                <Link href="/portfolio" className="ab-pillar-link">View Portfolio <ArrowIcon /></Link>
+                <h3>{t.pillarOperate}</h3>
+                <p>{t.pillarOperateDesc}</p>
+                <Link href="/portfolio" className="ab-pillar-link">{t.pillarOperateLink} <ArrowIcon /></Link>
               </div>
               <div className="card reveal reveal-delay-3">
                 <div className="ab-pillar-icon">
@@ -139,9 +150,9 @@ export default function AboutPage() {
                   </svg>
                 </div>
                 <div className="ab-pillar-number">03</div>
-                <h3>Lend</h3>
-                <p>We provide structured credit solutions to real estate operators, backed by asset-level underwriting and operational insight. Our lending arm generates consistent yield for income-focused investors through the Requity Income Fund.</p>
-                <Link href="/lending" className="ab-pillar-link">Loan Programs <ArrowIcon /></Link>
+                <h3>{t.pillarLend}</h3>
+                <p>{t.pillarLendDesc}</p>
+                <Link href="/lending" className="ab-pillar-link">{t.pillarLendLink} <ArrowIcon /></Link>
               </div>
             </div>
           </section>
@@ -149,42 +160,42 @@ export default function AboutPage() {
           {/* Team */}
           <section className="ab-team">
             <div className="ab-team-header reveal">
-              <div className="section-eyebrow section-eyebrow-dark">Leadership</div>
-              <h2 className="section-title">Meet <em>Our Team</em></h2>
-              <p className="section-desc">A seasoned team of real estate professionals with deep operational expertise across acquisitions, asset management, and investor relations.</p>
+              <div className="section-eyebrow section-eyebrow-dark">{t.teamEyebrow}</div>
+              <h2 className="section-title">{t.teamTitle} <em>{t.teamTitleEm}</em></h2>
+              <p className="section-desc">{t.teamDesc}</p>
             </div>
             <div className="ab-team-grid">
               <div className="card reveal reveal-delay-1">
                 <div className="ab-team-photo">
                   <div className="ab-team-initials">DM</div>
                 </div>
-                <h3>Dylan Marma, CCIM</h3>
-                <div className="ab-team-role">Principal &amp; CEO</div>
-                <p>Dylan leads Requity Group&apos;s investment strategy and portfolio management. With principal investments totaling over $150 million across 750+ multifamily apartments and 2,000+ manufactured housing and RV sites, he brings deep expertise in small-cap commercial real estate. Dylan holds a degree in Accounting and Finance from the University at Albany.</p>
+                <h3>{t.dylanName}</h3>
+                <div className="ab-team-role">{t.dylanRole}</div>
+                <p>{t.dylanBio}</p>
               </div>
               <div className="card reveal reveal-delay-2">
                 <div className="ab-team-photo">
                   <div className="ab-team-initials">GK</div>
                 </div>
-                <h3>Grethel Kauss</h3>
-                <div className="ab-team-role">Senior Regional Manager</div>
-                <p>Grethel Kauss serves as a Regional Manager for TRG Management, overseeing the Tennessee and Florida regions. With a Bachelor&apos;s degree in Business Economics from the University of South Florida and over 15 years of property management experience, Grethel drives the strategic vision and growth objectives within these regions. Her extensive experience, gained from roles at renowned organizations such as Maxx Properties, TGM Communities, and Camden Property Trust, has honed her expertise within TRG since 2021.</p>
+                <h3>{t.grethelName}</h3>
+                <div className="ab-team-role">{t.grethelRole}</div>
+                <p>{t.grethelBio}</p>
               </div>
               <div className="card reveal reveal-delay-3">
                 <div className="ab-team-photo">
                   <div className="ab-team-initials">JV</div>
                 </div>
-                <h3>Jet van Aardt</h3>
-                <div className="ab-team-role">Asset Manager</div>
-                <p>As Asset Manager with a focus on operations, Jet is responsible for identifying and executing strategic initiatives across the portfolio. His mission is to create organizational focus and accountability, remove obstacles, and drive operational excellence across all properties.</p>
+                <h3>{t.jetName}</h3>
+                <div className="ab-team-role">{t.jetRole}</div>
+                <p>{t.jetBio}</p>
               </div>
               <div className="card reveal reveal-delay-1">
                 <div className="ab-team-photo">
                   <div className="ab-team-initials">LV</div>
                 </div>
-                <h3>Luis Velez</h3>
-                <div className="ab-team-role">Head of Investor Relations</div>
-                <p>Luis leads investor relations at Requity, serving as the primary point of contact for current and prospective investors. He ensures the transparent communication and detailed reporting that Requity&apos;s investors have come to expect.</p>
+                <h3>{t.luisName}</h3>
+                <div className="ab-team-role">{t.luisRole}</div>
+                <p>{t.luisBio}</p>
               </div>
             </div>
           </section>
@@ -192,8 +203,8 @@ export default function AboutPage() {
           {/* Values */}
           <section className="ab-values">
             <div className="ab-values-header reveal">
-              <div className="section-eyebrow section-eyebrow-dark">Our Principles</div>
-              <h2 className="section-title">What <em>Drives Us</em></h2>
+              <div className="section-eyebrow section-eyebrow-dark">{t.valuesEyebrow}</div>
+              <h2 className="section-title">{t.valuesTitle} <em>{t.valuesTitleEm}</em></h2>
             </div>
             <div className="ab-values-grid">
               <div className="card reveal reveal-delay-1">
@@ -203,8 +214,8 @@ export default function AboutPage() {
                     <circle cx="12" cy="12" r="3" />
                   </svg>
                 </div>
-                <h3>Transparency</h3>
-                <p>Detailed property-level reporting, consistent communication, and full visibility into how your capital is deployed. You always know exactly where your money is working.</p>
+                <h3>{t.transparency}</h3>
+                <p>{t.transparencyDesc}</p>
               </div>
               <div className="card reveal reveal-delay-2">
                 <div className="ab-value-icon">
@@ -212,8 +223,8 @@ export default function AboutPage() {
                     <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
-                <h3>Integrity</h3>
-                <p>We align our interests with our investors and consistently deliver on our commitments. Our track record of overdelivering on projections speaks for itself.</p>
+                <h3>{t.integrity}</h3>
+                <p>{t.integrityDesc}</p>
               </div>
               <div className="card reveal reveal-delay-3">
                 <div className="ab-value-icon">
@@ -221,8 +232,8 @@ export default function AboutPage() {
                     <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
                 </div>
-                <h3>Operational Excellence</h3>
-                <p>We don&apos;t just acquire and hold — we actively improve every asset in our portfolio through hands-on management and strategic capital deployment.</p>
+                <h3>{t.operationalExcellence}</h3>
+                <p>{t.operationalExcellenceDesc}</p>
               </div>
               <div className="card reveal">
                 <div className="ab-value-icon">
@@ -232,8 +243,8 @@ export default function AboutPage() {
                     <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
                   </svg>
                 </div>
-                <h3>Community Impact</h3>
-                <p>We place significant emphasis on enhancing and building authentic relationships with the communities we invest in, creating value for residents alongside our investors.</p>
+                <h3>{t.communityImpact}</h3>
+                <p>{t.communityImpactDesc}</p>
               </div>
             </div>
           </section>
@@ -241,8 +252,8 @@ export default function AboutPage() {
           {/* Testimonials */}
           <section className="ab-testimonials">
             <div className="ab-testimonials-header reveal">
-              <div className="section-eyebrow section-eyebrow-dark">Investor Testimonials</div>
-              <h2 className="section-title">Trusted by <em>Sophisticated Investors</em></h2>
+              <div className="section-eyebrow section-eyebrow-dark">{t.testimonialsEyebrow}</div>
+              <h2 className="section-title">{t.testimonialsTitle} <em>{t.testimonialsTitleEm}</em></h2>
             </div>
             <div className="ab-testimonials-grid">
               <div className="test-card reveal reveal-delay-1">
@@ -294,17 +305,17 @@ export default function AboutPage() {
           <section className="ab-cta">
             <div className="ab-cta-banner reveal">
               <div className="ab-cta-content">
-                <div className="section-eyebrow">Get Started</div>
-                <h2 className="section-title section-title-light">Partner With <em>Requity</em></h2>
+                <div className="section-eyebrow">{t.ctaEyebrow}</div>
+                <h2 className="section-title section-title-light">{t.ctaTitle} <em>{t.ctaTitleEm}</em></h2>
                 <p className="section-desc section-desc-light" style={{ maxWidth: 520, margin: '0 auto 40px' }}>
-                  Whether you&apos;re looking to invest for consistent returns or need capital for your next real estate project, we&apos;d love to hear from you.
+                  {t.ctaDesc}
                 </p>
                 <div className="ab-cta-actions">
                   <Link href="/income-fund" className="btn-primary">
-                    Explore the Income Fund <ArrowIcon />
+                    {t.ctaIncomeFund} <ArrowIcon />
                   </Link>
                   <Link href="/lending" className="btn-secondary">
-                    Lending Programs <ArrowIcon />
+                    {t.ctaLending} <ArrowIcon />
                   </Link>
                 </div>
               </div>
@@ -316,14 +327,14 @@ export default function AboutPage() {
             <div className="footer-grid">
               <div className="footer-brand">
                 <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
-                <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
+                <p>{f.brand}</p>
               </div>
-              <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
-              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/request-access">Request Access</Link><Link href="/investor-faq">Investor FAQ</Link></div>
-              <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Request a Quote</Link><Link href="/apply">Loan Application</Link><Link href="/borrower-faq">Borrower FAQ</Link></div>
+              <div className="footer-col"><h4>{f.company}</h4><Link href="/about">{f.about}</Link><Link href="/portfolio">{f.portfolio}</Link><Link href="/insights">{f.insights}</Link></div>
+              <div className="footer-col"><h4>{f.invest}</h4><Link href="/income-fund">{f.incomeFund}</Link><a href="https://investors.appfolioim.com/trg/investor/login">{f.investorLogin}</a><Link href="/request-access">{f.requestAccess}</Link><Link href="/investor-faq">{f.investorFaq}</Link></div>
+              <div className="footer-col"><h4>{f.lending}</h4><Link href="/lending">{f.loanPrograms}</Link><Link href="/apply">{f.requestQuote}</Link><Link href="/apply">{f.loanApplication}</Link><Link href="/borrower-faq">{f.borrowerFaq}</Link></div>
             </div>
             <div className="footer-bottom">
-              <p>&copy; 2026 Requity Group. All rights reserved. &nbsp;|&nbsp; 401 E Jackson St Ste 3300, Tampa, FL 33602 &nbsp;|&nbsp; 813.288.0636</p>
+              <p>{f.copyright} &nbsp;|&nbsp; {f.address} &nbsp;|&nbsp; {f.phone}</p>
             </div>
           </footer>
         </div>
