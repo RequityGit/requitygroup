@@ -360,16 +360,14 @@ export default function ApplyPage() {
   };
 
   const selectLoanType = (id) => {
+    if (form.loanType === id) {
+      setDirection(1);
+      setStep((s) => Math.min(s + 1, totalSteps));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     setForm((prev) => ({ ...prev, loanType: id }));
     setError('');
-  };
-
-  const selectLoanTypeAndContinue = (id) => {
-    setForm((prev) => ({ ...prev, loanType: id }));
-    setError('');
-    setDirection(1);
-    setStep((s) => Math.min(s + 1, totalSteps));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   /* ─── Google Places Autocomplete ─── */
@@ -626,7 +624,6 @@ export default function ApplyPage() {
                     type="button"
                     className={`loan-type-card ${form.loanType === lt.id ? 'selected' : ''}`}
                     onClick={() => selectLoanType(lt.id)}
-                    onDoubleClick={() => selectLoanTypeAndContinue(lt.id)}
                   >
                     <div className="lt-icon">{lt.icon}</div>
                     <div className="lt-label">{lt.label}</div>
