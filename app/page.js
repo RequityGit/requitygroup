@@ -69,7 +69,7 @@ export default function HomePage() {
             <p className="hp-hero-p">We apply operational expertise to small-cap real estate — creating value in niche markets that institutional capital cannot efficiently pursue.</p>
             <div className="hp-hero-btns">
               <Link href="/request-access" className="btn-primary">Request Access <ArrowIcon /></Link>
-              <Link href="/apply" className="btn-secondary">Request a Loan</Link>
+              <Link href="/apply" className="btn-primary">Request a Loan <ArrowIcon /></Link>
             </div>
           </div>
         </div>
