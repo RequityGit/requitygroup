@@ -701,30 +701,28 @@ const requestAccessStyles = `
     color: #fff;
   }
 
-  /* ── Thank You Card ── */
+  /* ── Thank You Note ── */
   .ra-thankyou {
     text-align: center;
-    padding: 48px 40px 40px;
-    background: rgba(198,169,98,0.04);
-    border: 1px solid rgba(198,169,98,0.15);
-    margin-bottom: 48px;
+    padding: 12px 20px 16px;
+    margin-bottom: 24px;
   }
   .ra-thankyou-icon {
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 20px;
+    width: 28px;
+    height: 28px;
+    margin: 0 auto 8px;
   }
   .ra-thankyou-icon svg { width: 100%; height: 100%; }
   .ra-thankyou-text {
-    font-size: 16px;
-    color: rgba(255,255,255,0.65);
-    line-height: 1.7;
-    max-width: 540px;
-    margin: 0 auto 16px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.5;
+    max-width: 480px;
+    margin: 0 auto 6px;
   }
   .ra-thankyou-confirm {
-    font-size: 13px;
-    color: rgba(255,255,255,0.35);
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
   }
 
   /* ── Profile Form ── */
