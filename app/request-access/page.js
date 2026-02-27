@@ -780,6 +780,7 @@ const requestAccessStyles = `
     justify-content: center;
     gap: 10px;
     width: 100%;
+    margin-top: 32px;
     padding: 18px 36px;
     background: var(--champagne);
     color: #fff;
