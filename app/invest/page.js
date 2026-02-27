@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '../../components/LanguageContext';
+import { LanguageToggle } from '../../components/LanguageToggle';
+import translations from '../../lib/translations';
 
 const INVESTOR_FAQS = [
   {
@@ -110,6 +113,11 @@ const INVESTOR_FAQS = [
 export default function InvestPage() {
   const [openItems, setOpenItems] = useState({});
 
+  const { lang } = useLanguage();
+  const t = translations.invest[lang];
+  const nav = translations.nav[lang];
+  const f = translations.footer[lang];
+
   useEffect(() => {
     const reveals = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver(
@@ -153,36 +161,39 @@ export default function InvestPage() {
           <nav className="scrolled">
             <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
             <ul className="nav-links" id="navLinks">
-              <li><Link href="/invest" style={{ color: 'var(--champagne)' }}>Invest</Link></li>
-              <li><Link href="/lending">Borrow</Link></li>
-              <li><Link href="/about">About</Link></li>
-              <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login &rarr;</a></li>
+              <li><Link href="/invest" style={{ color: 'var(--champagne)' }}>{nav.invest}</Link></li>
+              <li><Link href="/lending">{nav.borrow}</Link></li>
+              <li><Link href="/about">{nav.about}</Link></li>
+              <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">{nav.investorLogin} &rarr;</a></li>
             </ul>
-            <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
-              <span></span><span></span><span></span>
-            </button>
+            <div className="nav-right">
+              <LanguageToggle />
+              <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
+                <span></span><span></span><span></span>
+              </button>
+            </div>
           </nav>
 
           {/* Hero content */}
           <div className="iv-hero-body">
-            <div className="iv-hero-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>Invest With Requity</div>
-            <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>Invest in <em>Value-Add</em><br />Real Estate</h1>
+            <div className="iv-hero-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>{t.heroEyebrow}</div>
+            <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>{t.heroTitle1} <em>{t.heroTitleEm}</em><br />{t.heroTitle2}</h1>
             <p className="iv-hero-p" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.6s forwards' }}>
-              Access institutional-quality real estate investments through our vertically integrated platform. From income-producing credit strategies to direct equity, we offer accredited investors pathways to consistent, asset-backed returns.
+              {t.heroDesc}
             </p>
             <div className="iv-hero-actions" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.8s forwards' }}>
-              <Link href="/request-access" className="btn-primary">Request Access <ArrowIcon /></Link>
-              <a href="https://investors.appfolioim.com/trg/investor/login" className="btn-secondary">Investor Login</a>
+              <Link href="/request-access" className="btn-primary">{t.requestAccess} <ArrowIcon /></Link>
+              <a href="https://investors.appfolioim.com/trg/investor/login" className="btn-secondary">{t.investorLogin}</a>
             </div>
           </div>
         </div>
 
         {/* Stats bar */}
         <div className="stats-bar" style={{ margin: '0 auto', position: 'relative', zIndex: 2 }}>
-          <div className="stat-cell"><div className="stat-num champagne">$150M+</div><div className="stat-lbl">Assets Under Management</div></div>
-          <div className="stat-cell"><div className="stat-num">32</div><div className="stat-lbl">Properties Acquired</div></div>
-          <div className="stat-cell"><div className="stat-num">70+</div><div className="stat-lbl">Loans Originated</div></div>
-          <div className="stat-cell"><div className="stat-num champagne">$70M+</div><div className="stat-lbl">Investor Capital Raised</div></div>
+          <div className="stat-cell"><div className="stat-num champagne">$150M+</div><div className="stat-lbl">{t.statAum}</div></div>
+          <div className="stat-cell"><div className="stat-num">32</div><div className="stat-lbl">{t.statProperties}</div></div>
+          <div className="stat-cell"><div className="stat-num">70+</div><div className="stat-lbl">{t.statLoans}</div></div>
+          <div className="stat-cell"><div className="stat-num champagne">$70M+</div><div className="stat-lbl">{t.statCapital}</div></div>
         </div>
 
         <div style={{ height: 64, background: 'var(--navy-deep)' }} />
@@ -198,8 +209,8 @@ export default function InvestPage() {
           {/* Why Invest */}
           <section className="iv-why">
             <div className="iv-why-header reveal">
-              <h2>Why Invest With <em>Requity Group</em></h2>
-              <p>We don&apos;t just raise capital — we operate every asset in our portfolio. Our vertically integrated model gives investors access to a team with deep operational expertise, transparent reporting, and a proven track record.</p>
+              <h2>{t.whyTitle} <em>{t.whyTitleEm}</em></h2>
+              <p>{t.whyDesc}</p>
             </div>
             <div className="iv-why-grid">
               <div className="card iv-why-card reveal reveal-delay-1">
@@ -208,8 +219,8 @@ export default function InvestPage() {
                     <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
                   </svg>
                 </div>
-                <h3>Vertically Integrated</h3>
-                <p>From acquisitions to operations to lending, we control every element of the value chain — delivering superior underwriting, asset management, and investor returns.</p>
+                <h3>{t.verticallyIntegrated}</h3>
+                <p>{t.verticallyIntegratedDesc}</p>
               </div>
               <div className="card iv-why-card reveal reveal-delay-2">
                 <div className="iv-why-icon">
@@ -220,8 +231,8 @@ export default function InvestPage() {
                     <line x1="15" y1="9" x2="15.01" y2="9" />
                   </svg>
                 </div>
-                <h3>Investor-First Approach</h3>
-                <p>Transparent reporting, consistent communication, and detailed property-level updates. You always know exactly where your money is working.</p>
+                <h3>{t.investorFirst}</h3>
+                <p>{t.investorFirstDesc}</p>
               </div>
               <div className="card iv-why-card reveal reveal-delay-3">
                 <div className="iv-why-icon">
@@ -229,8 +240,8 @@ export default function InvestPage() {
                     <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
                 </div>
-                <h3>Proven Track Record</h3>
-                <p>Over $70M in investor capital raised and deployed across 70+ loans with consistent performance through all market conditions.</p>
+                <h3>{t.provenTrackRecord}</h3>
+                <p>{t.provenTrackRecordDesc}</p>
               </div>
               <div className="card iv-why-card reveal reveal-delay-1">
                 <div className="iv-why-icon">
@@ -238,8 +249,8 @@ export default function InvestPage() {
                     <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
-                <h3>Asset-Backed Security</h3>
-                <p>Every dollar is secured by tangible real estate assets with conservative loan-to-value ratios. Your capital is protected by real property.</p>
+                <h3>{t.assetBacked}</h3>
+                <p>{t.assetBackedDesc}</p>
               </div>
             </div>
           </section>
@@ -247,33 +258,33 @@ export default function InvestPage() {
           {/* Income Fund Product Card */}
           <section className="iv-product">
             <div className="iv-product-header reveal">
-              <h2>Investment <em>Opportunities</em></h2>
+              <h2>{t.productTitle} <em>{t.productTitleEm}</em></h2>
             </div>
             <Link href="/income-fund" className="iv-fund-card card reveal" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
               <div className="iv-fund-inner">
                 <div className="iv-fund-content">
-                  <div className="iv-fund-label">Now Open to Investors</div>
-                  <h3>Requity Income Fund</h3>
-                  <p>A diversified real estate credit fund targeting consistent monthly income backed by tangible assets with conservative underwriting. The fund deploys capital across bridge loans, manufactured housing, RV parks, and multifamily properties.</p>
+                  <div className="iv-fund-label">{t.fundLabel}</div>
+                  <h3>{t.fundName}</h3>
+                  <p>{t.fundDesc}</p>
                   <div className="iv-fund-stats">
                     <div className="iv-fund-stat">
-                      <strong>Monthly</strong>
-                      <span>Distributions</span>
+                      <strong>{t.fundMonthly}</strong>
+                      <span>{t.fundDistributions}</span>
                     </div>
                     <div className="iv-fund-stat">
                       <strong>$70M+</strong>
-                      <span>Capital Raised</span>
+                      <span>{t.fundCapitalRaised}</span>
                     </div>
                     <div className="iv-fund-stat">
-                      <strong>Accredited</strong>
-                      <span>Investors Only</span>
+                      <strong>{t.fundAccredited}</strong>
+                      <span>{t.fundInvestorsOnly}</span>
                     </div>
                     <div className="iv-fund-stat">
-                      <strong>Asset-Backed</strong>
-                      <span>Real Estate</span>
+                      <strong>{t.fundAssetBacked}</strong>
+                      <span>{t.fundRealEstate}</span>
                     </div>
                   </div>
-                  <span className="iv-fund-link">Explore the Income Fund <ArrowIcon /></span>
+                  <span className="iv-fund-link">{t.exploreFund} <ArrowIcon /></span>
                 </div>
               </div>
             </Link>
@@ -282,7 +293,7 @@ export default function InvestPage() {
           {/* Testimonials */}
           <div className="iv-testimonials">
             <div className="iv-testimonials-header reveal">
-              <h2>What Our <em>Investors</em> Say</h2>
+              <h2>{t.testimonialTitle} <em>{t.testimonialTitleEm}</em> {t.testimonialTitle2}</h2>
             </div>
             <div className="iv-testimonials-grid">
               <div className="test-card reveal">
@@ -321,8 +332,8 @@ export default function InvestPage() {
           {/* Investor FAQ */}
           <section className="iv-faq">
             <div className="iv-faq-header reveal">
-              <h2>Investor <em>FAQ</em></h2>
-              <p>Common questions about investing with Requity Group.</p>
+              <h2>{t.faqTitle} <em>{t.faqTitleEm}</em></h2>
+              <p>{t.faqDesc}</p>
             </div>
             <div className="iv-faq-content">
               {INVESTOR_FAQS.map((section) => (
@@ -351,18 +362,18 @@ export default function InvestPage() {
               ))}
             </div>
             <div className="iv-faq-more reveal" style={{ textAlign: 'center', marginTop: 40 }}>
-              <Link href="/investor-faq" className="btn-primary-light">View All Investor FAQs <ArrowIcon /></Link>
+              <Link href="/investor-faq" className="btn-primary-light">{t.viewAllFaqs} <ArrowIcon /></Link>
             </div>
           </section>
 
           {/* CTA */}
           <section className="iv-cta">
             <div className="iv-cta-banner reveal">
-              <div className="iv-cta-eyebrow">Get Started</div>
-              <h2>Ready to <em>Invest?</em></h2>
-              <p>Join our community of sophisticated investors earning consistent, asset-backed returns. Request information today and our team will be in touch.</p>
+              <div className="iv-cta-eyebrow">{t.ctaEyebrow}</div>
+              <h2>{t.ctaTitle} <em>{t.ctaTitleEm}</em></h2>
+              <p>{t.ctaDesc}</p>
               <Link href="/request-access" className="btn-primary" style={{ borderRadius: 8 }}>
-                Request Access <ArrowIcon />
+                {t.requestAccess} <ArrowIcon />
               </Link>
             </div>
           </section>
@@ -372,14 +383,14 @@ export default function InvestPage() {
             <div className="footer-grid">
               <div className="footer-brand">
                 <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
-                <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
+                <p>{f.brand}</p>
               </div>
-              <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
-              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/request-access">Request Access</Link><Link href="/investor-faq">Investor FAQ</Link></div>
-              <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Request a Quote</Link><Link href="/apply">Loan Application</Link><Link href="/borrower-faq">Borrower FAQ</Link></div>
+              <div className="footer-col"><h4>{f.company}</h4><Link href="/about">{f.about}</Link><Link href="/portfolio">{f.portfolio}</Link><Link href="/insights">{f.insights}</Link></div>
+              <div className="footer-col"><h4>{f.invest}</h4><Link href="/income-fund">{f.incomeFund}</Link><a href="https://investors.appfolioim.com/trg/investor/login">{f.investorLogin}</a><Link href="/request-access">{f.requestAccess}</Link><Link href="/investor-faq">{f.investorFaq}</Link></div>
+              <div className="footer-col"><h4>{f.lending}</h4><Link href="/lending">{f.loanPrograms}</Link><Link href="/apply">{f.requestQuote}</Link><Link href="/apply">{f.loanApplication}</Link><Link href="/borrower-faq">{f.borrowerFaq}</Link></div>
             </div>
             <div className="footer-bottom">
-              <p>&copy; 2026 Requity Group. All rights reserved. &nbsp;|&nbsp; 401 E Jackson St Ste 3300, Tampa, FL 33602 &nbsp;|&nbsp; 813.288.0636</p>
+              <p>{f.copyright} &nbsp;|&nbsp; {f.address} &nbsp;|&nbsp; {f.phone}</p>
             </div>
           </footer>
         </div>
@@ -388,7 +399,7 @@ export default function InvestPage() {
       {/* Disclaimer */}
       <div className="iv-disclaimer">
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px' }}>
-          <p>This page is for informational purposes only and does not constitute an offer to sell or a solicitation of an offer to buy any securities. Offers are made only to accredited investors through the fund&apos;s private placement memorandum. Past performance is not indicative of future results. All investments involve risk, including the potential loss of principal.</p>
+          <p>{t.disclaimer}</p>
         </div>
       </div>
     </>

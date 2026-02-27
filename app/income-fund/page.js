@@ -2,8 +2,16 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '../../components/LanguageContext';
+import { LanguageToggle } from '../../components/LanguageToggle';
+import translations from '../../lib/translations';
 
 export default function IncomeFundPage() {
+  const { lang } = useLanguage();
+  const t = translations.incomeFund[lang];
+  const nav = translations.nav[lang];
+  const f = translations.footer[lang];
+
   useEffect(() => {
     const reveals = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver(
@@ -43,35 +51,38 @@ export default function IncomeFundPage() {
           <nav className="scrolled">
             <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
             <ul className="nav-links" id="navLinks">
-              <li><Link href="/invest" style={{ color: 'var(--champagne)' }}>Invest</Link></li>
-              <li><Link href="/lending">Borrow</Link></li>
-              <li><Link href="/about">About</Link></li>
-              <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login &rarr;</a></li>
+              <li><Link href="/invest" style={{ color: 'var(--champagne)' }}>{nav.invest}</Link></li>
+              <li><Link href="/lending">{nav.borrow}</Link></li>
+              <li><Link href="/about">{nav.about}</Link></li>
+              <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">{nav.investorLogin} &rarr;</a></li>
             </ul>
-            <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
-              <span></span><span></span><span></span>
-            </button>
+            <div className="nav-right">
+              <LanguageToggle />
+              <button className="mobile-toggle" id="mobileToggle" aria-label="Menu">
+                <span></span><span></span><span></span>
+              </button>
+            </div>
           </nav>
 
           {/* Hero content */}
           <div className="if-hero-body">
             <div className="if-hero-grid">
               <div className="if-hero-content">
-                <div className="if-hero-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>Income Fund</div>
-                <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>Consistent Returns,<br />Backed by <em>Real Assets</em></h1>
+                <div className="if-hero-eyebrow" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.2s forwards' }}>{t.heroEyebrow}</div>
+                <h1 style={{ opacity: 0, animation: 'fadeUp 0.8s 0.4s forwards' }}>{t.heroTitle1}<br />{t.heroTitle2} <em>{t.heroTitleEm}</em></h1>
                 <p className="if-hero-desc" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.6s forwards' }}>
-                  The Requity Income Fund provides accredited investors with access to a diversified portfolio of real estate debt and equity positions, generating consistent monthly distributions backed by tangible assets.
+                  {t.heroDesc}
                 </p>
                 <div className="if-hero-actions" style={{ opacity: 0, animation: 'fadeUp 0.8s 0.8s forwards' }}>
-                  <a href="#invest" className="btn-primary">Request Information <ArrowIcon /></a>
-                  <a href="https://investors.appfolioim.com/trg/investor/login" className="btn-secondary">Investor Login</a>
+                  <a href="#invest" className="btn-primary">{t.requestInfo} <ArrowIcon /></a>
+                  <a href="https://investors.appfolioim.com/trg/investor/login" className="btn-secondary">{t.investorLogin}</a>
                 </div>
               </div>
               <div className="if-hero-card" style={{ opacity: 0, animation: 'fadeIn 1s 0.6s forwards' }}>
                 <div className="if-fund-card">
-                  <div className="if-fund-card-label">Now Open to Investors</div>
-                  <div className="if-fund-card-title">Requity Income Fund</div>
-                  <p className="if-fund-card-desc">A diversified real estate credit fund targeting consistent monthly income backed by tangible assets with conservative underwriting.</p>
+                  <div className="if-fund-card-label">{t.fundLabel}</div>
+                  <div className="if-fund-card-title">{t.fundTitle}</div>
+                  <p className="if-fund-card-desc">{t.fundDesc}</p>
                   <div className="if-card-stats-grid">
                     <div className="if-card-stat">
                       <div className="if-card-stat-value">$70M+</div>
@@ -334,14 +345,14 @@ export default function IncomeFundPage() {
             <div className="footer-grid">
               <div className="footer-brand">
                 <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
-                <p>A vertically integrated real estate investment company headquartered in Tampa, Florida.</p>
+                <p>{f.brand}</p>
               </div>
-              <div className="footer-col"><h4>Company</h4><Link href="/about">About</Link><Link href="/portfolio">Portfolio</Link><Link href="/insights">Insights</Link></div>
-              <div className="footer-col"><h4>Invest</h4><Link href="/income-fund">Income Fund</Link><a href="https://investors.appfolioim.com/trg/investor/login">Investor Login</a><Link href="/request-access">Request Access</Link><Link href="/investor-faq">Investor FAQ</Link></div>
-              <div className="footer-col"><h4>Lending</h4><Link href="/lending">Loan Programs</Link><Link href="/apply">Request a Quote</Link><Link href="/apply">Loan Application</Link><Link href="/borrower-faq">Borrower FAQ</Link></div>
+              <div className="footer-col"><h4>{f.company}</h4><Link href="/about">{f.about}</Link><Link href="/portfolio">{f.portfolio}</Link><Link href="/insights">{f.insights}</Link></div>
+              <div className="footer-col"><h4>{f.invest}</h4><Link href="/income-fund">{f.incomeFund}</Link><a href="https://investors.appfolioim.com/trg/investor/login">{f.investorLogin}</a><Link href="/request-access">{f.requestAccess}</Link><Link href="/investor-faq">{f.investorFaq}</Link></div>
+              <div className="footer-col"><h4>{f.lending}</h4><Link href="/lending">{f.loanPrograms}</Link><Link href="/apply">{f.requestQuote}</Link><Link href="/apply">{f.loanApplication}</Link><Link href="/borrower-faq">{f.borrowerFaq}</Link></div>
             </div>
             <div className="footer-bottom">
-              <p>&copy; 2026 Requity Group. All rights reserved. &nbsp;|&nbsp; 401 E Jackson St Ste 3300, Tampa, FL 33602 &nbsp;|&nbsp; 813.288.0636</p>
+              <p>{f.copyright} &nbsp;|&nbsp; {f.address} &nbsp;|&nbsp; {f.phone}</p>
             </div>
           </footer>
         </div>

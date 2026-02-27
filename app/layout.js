@@ -1,4 +1,5 @@
 import './globals.css';
+import { LanguageProvider } from '../components/LanguageContext';
 
 export const metadata = {
   title: 'Requity Group | Private Real Estate Investments',
@@ -19,7 +20,9 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <LanguageProvider>{children}</LanguageProvider>
+      </body>
     </html>
   );
 }

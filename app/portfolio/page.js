@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { findCollectionByName, getField, getImageUrl } from '../../lib/webflow';
 import PortfolioClient from './PortfolioClient';
+import { LanguageToggle } from '../../components/LanguageToggle';
 
 export const metadata = {
   title: 'Portfolio | Requity Group',
@@ -72,6 +73,9 @@ export default async function PortfolioPage() {
               <li><Link href="/about">About</Link></li>
               <li><a href="https://investors.appfolioim.com/trg/investor/login" className="nav-cta">Investor Login &rarr;</a></li>
             </ul>
+            <div className="nav-right">
+              <LanguageToggle />
+            </div>
           </nav>
           <div className="pf-hero-body">
             <div className="section-eyebrow">Our Portfolio</div>
