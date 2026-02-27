@@ -45,7 +45,15 @@ export async function POST(request) {
       },
     });
 
-    const notifyEmail = process.env.INVESTOR_NOTIFY_EMAIL || 'dylan@requitygroup.com';
+    const notifyEmail = process.env.INVESTOR_NOTIFY_EMAIL;
+    if (!notifyEmail) {
+      console.error('INVESTOR_NOTIFY_EMAIL environment variable is not set');
+      return Response.json(
+        { error: 'Server configuration error. Please try again later.' },
+        { status: 500 }
+      );
+    }
+    const contactEmail = process.env.INVESTOR_CONTACT_EMAIL || notifyEmail;
     const timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
 
     // ─── Internal Notification Email ───
@@ -62,7 +70,7 @@ export async function POST(request) {
       from: `"Requity Group" <${process.env.SMTP_USER}>`,
       to: email,
       subject: 'Thank You for Your Interest — Requity Income Fund',
-      html: buildConfirmationEmail({ firstName, timestamp }),
+      html: buildConfirmationEmail({ firstName, contactEmail, timestamp }),
     });
 
     return Response.json({ success: true, message: 'Request submitted successfully' });
@@ -226,7 +234,7 @@ function buildConfirmationEmail(d) {
         Dylan Marma, Managing Partner
       </p>
       <p style="margin:0 0 4px;font-size:14px;">
-        <a href="mailto:dylan@requitygroup.com" style="color:#C6A962;text-decoration:none;">dylan@requitygroup.com</a>
+        <a href="mailto:${d.contactEmail}" style="color:#C6A962;text-decoration:none;">${d.contactEmail}</a>
       </p>
       <p style="margin:0;font-size:14px;">
         <a href="tel:+18132880636" style="color:#C6A962;text-decoration:none;">813.288.0636</a>
