@@ -14,7 +14,6 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.98.0",
     "next": "^14.2.0",
     "nodemailer": "^6.9.0",
     "react": "^18.3.0",
