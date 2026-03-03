@@ -49,7 +49,7 @@ export default function AboutPage() {
         <div className="ab-hero">
           {/* Nav */}
           <nav className="scrolled">
-            <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
+            <Link href="/" className="nav-logo"><img src="/logo-light.svg" alt="Requity" /></Link>
             <ul className="nav-links" id="navLinks">
               <li><Link href="/invest">{nav.invest}</Link></li>
               <li><Link href="/lending">{nav.borrow}</Link></li>
@@ -326,7 +326,7 @@ export default function AboutPage() {
           <footer>
             <div className="footer-grid">
               <div className="footer-brand">
-                <Link href="/" className="nav-logo"><img src="/logo-light.png" alt="Requity" /></Link>
+                <Link href="/" className="nav-logo"><img src="/logo-light.svg" alt="Requity" /></Link>
                 <p>{f.brand}</p>
               </div>
               <div className="footer-col"><h4>{f.company}</h4><Link href="/about">{f.about}</Link><Link href="/portfolio">{f.portfolio}</Link><Link href="/insights">{f.insights}</Link></div>
